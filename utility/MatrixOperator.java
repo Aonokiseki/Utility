@@ -5,17 +5,6 @@ import java.text.DecimalFormat;
 public class MatrixOperator {
 	private MatrixOperator(){}
 	
-	public static void main(String[] args){
-		double[][] array = new double[][]{
-				{2, 3, 5, 7, 11},
-				{13,17,19,23,29},
-				{31,37,41,43,47},
-				{53,57,59,61,67},
-				{71,73,77,79,83}
-		};
-		System.out.println(determinant(array));
-	}
-	
 	public static double determinant(double[][] matrix){
 		if(matrix.length == 0)
 			throw new IllegalArgumentException("matrix.length == 0");
