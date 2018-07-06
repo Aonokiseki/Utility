@@ -1,0 +1,336 @@
+package utility;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public final class StringOperator {
+	/*
+	 * 防止类被实例化
+	 */
+	private StringOperator(){}
+	private final static String[] FAMILY_NAME_SET = new String[]{
+		"赵","钱","孙","李","周","吴","郑","王","冯","陈",
+		"诸","卫","蒋","沈","韩","杨","朱","秦","尤","许",
+		"何","吕","施","张","孔","曹","严","华","金","魏",
+		"陶","姜","戚","谢","邹","喻","柏","水","窦","章",
+		"云","苏","潘","葛","奚","范","彭","郎","鲁","韦",
+		"昌","马","苗","凤","花","方","俞","任","袁","柳",
+		"酆","鲍","史","唐","费","廉","岑","薛","雷","贺",
+		"倪","汤","滕","殷","罗","毕","郝","邬","安","常",
+		"乐","于","时","傅","皮","卡","齐","康","伍","余",
+		"元","卜","顾","孟","平","黄","和","穆","萧","尹",
+		"姚","邵","堪","汪","祁","毛","禹","狄","米","贝",
+		"明","臧","计","伏","成","戴","谈","宋","茅","庞",
+		"熊","纪","舒","屈","项","祝","董","粱","杜","阮",
+		"蓝","闵","席","季","麻","强","贾","路","娄","危",
+		"江","童","颜","郭","梅","盛","林","刁","钟","徐",
+		"邱","骆","高","夏","蔡","田","樊","胡","凌","霍",
+		"虞","万","支","柯","咎","管","卢","莫","司马","上官",
+		"欧阳","夏侯","诸葛","东方","皇甫","尉迟","公羊","濮阳","淳于","单于",
+		"太叔","公孙","轩辕","令狐","钟离","宇文","长孙","慕容","鲜于","司徒",
+		"端木","拓拔","百里","东郭","呼延","左丘","南宫","汝鄢","司寇","归海"
+	};
+	
+	private final static String[] NAME_SET = new String[]{
+		"伟","勇","军","磊","涛","斌","强","鹏","杰","峰","超","波","辉","刚","健",
+		"明","亮","俊","飞","凯","浩","华","平","鑫","毅","林","洋","宇","敏","宁",
+		"建","兵","旭","雷","锋","彬","龙","翔","阳","剑","东","博","威","海","巍",
+		"晨","炜","帅","岩","江","松","文","云","力","成","琦","进","昊","宏","欣",
+		"坤","冰","锐","震","楠","佳","忠","庆","杨","新","骏","君","栋","青","帆",
+		"静","荣","立","虎","哲","晖","玮","瑞","光","钢","丹","坚","振","晓","祥",
+		"良","春","晶","猛","星","政","智","琪","永","迪","冬","琳","胜","康","彪",
+		"乐","诚","志","维","卫","睿","捷","群","森","洪","扬","科","奇","铭","航",
+		"利","鸣","恒","源","聪","凡","颖","欢","昕","武","雄","洁","川","清","义",
+		"滨","皓","达","民","跃","越","兴","正","靖","曦","璐","挺","淼","泉","程",
+		"韬","冲","硕","远","昆","瑜","晔","煜","红","权","征","雨","野","慧","萌",
+		"山","丰","珂","彤","悦","朋","钧","彦","然","枫","嘉","峥","寅","烨","铮",
+		"卓","畅","钊","金","可","昱","爽","盛","路","晋","谦","克","方","闯","耀",
+		"奎","一","晟","勤","豪","安","尧","全","琛","腾","队","鸿","玉","泽","凌",
+		"渊","蕾","广","顺","莹","英","峻","攀","宾","驰","燕","霖","喆","椒","国",
+		"恺","潇","琨","轶","芳","吉","亚","梁","焱","侃","臻","嵩","岳","炯","艳",
+		"宝","岗","斐","啸","元","辰","萍","柯","羽","培","通","天","麟","晗","菲",
+		"雪","铁","贺","钰","戈","灿","琼","锦","生","原","洲","炎","丽","勋","奕",
+		"艺","中","德","轩","京","标","旺","南","黎","禹","莉","蔚","总","益","祺",
+		"骥","沛","汉","真","非","鹤","升","蒙","城","钦","锴","骁","壮","罡","键",
+		"瑶","虹","石","展","翼","为","灏","玲","放","娜","露","赞","娟","倩","懿",
+		"劲","婷","策","魁","霄","冉","敬","卿","均","治","迅","臣","桦","镇","骞",
+		"河","希","瑾","鹰","舟","丁","涵","弘","纲","泳","理","福","俭","乾","纯",
+		"双","屹","涌","根","怡","果","田","岭","昭","飚","勃","嵘","熙","贤","申",
+		"琰","宽","鼎","滔","昌","璞","逸","贵","喜","昂","柳","韶","瑛","伦","茂",
+		"景","柱","岚","实","珏","霞","园","学","惠","衡","风","玺","赫","桐","寒",
+		"圣","陈","旋","礼","霆","月","侠","密","堃","富","薇","仁","浪","津","垒",
+		"齐","炼","瀚","泓","灵","朝","夏","严","意","银","璇","鲲","易","行","品",
+		"垄","靓","苏","澄","赛","思","旗","淳","雯","继","友","和","革","延","能",
+		"菁","叶","隽","烽","昶","笑","裕","鲁","铎","昀","骅","高","翀","润","熠",
+		"锟","望","卡","微","拓","名","秋","冶","雁","开","定","想","舒","庚","蓉",
+		"牧","重","孟","澎","信","郁","珉","钟","盼","恩","周","潮","季","烈","魏",
+		"奔","承","玎","来","桥","尚","增","婧","茜","前","琴","麒","竞","童","舜",
+		"会","柏","冠","佩","游","珊","融","满","添","咏","响","珩","杉","韧","梅",
+		"乔","同","梦","树","杭","念","遥","苗","胤","榕","耿","崇","湘","里","疆",
+		"旻","启","烁","楷","才","仲","隆","媛","晴","章","舰","璟","桔","李","影",
+		"亭","珺","言","笛","弛","营","宪","渝","发","逊","运","豹","翊","研","登",
+		"炳","蕊","鉴","妍","焰","颂","闻","桢","镭","特","曙","盟","贝","千","保",
+		"功","竹","印","玥","夭","冀","阔","圆","湛","澍","争","众","肖","祯","默",
+		"珍","煌","余","准","忱","宸","普","韦","舸","创","芸","彭","泰","心","廷"
+	};
+	
+	/**
+	 * 判断文本是否非空
+	 * 
+	 * @param text 待测文本
+	 * @return boolean 是否非空
+	 */
+	public static boolean isNotEmpty(String text){  
+        boolean result = false;
+        if((text != null) && (!"".equals(text))){
+        	result = true;
+        }
+        return result;
+    }
+	
+	
+	/** 
+     * 检验字符串是否匹配指定的正则表达式 
+     *  
+     * @param regex 正则表达式 
+     * @param input 字符串 
+     * @return boolean true-匹配 false-不匹配 
+     */  
+    public static boolean validByRegex(String regex, String input)  {  
+        Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);  
+        Matcher regexMatcher = p.matcher(input);  
+        return regexMatcher.find();  
+    }
+	/** 
+     * 是否URL地址 
+     *  
+     * @param url URL 
+     * @return boolean true-是 false-否 
+     */  
+    public static boolean isUrl(String url)  {  
+        return validByRegex("(http://|https://)?([\\w-]+\\.)+[\\w-]+(/[\\w- ./?%&=]*)?", url);  
+    }
+    /** 
+     * 是否为整数字符串 
+     *  
+     * @param string 字符串 
+     * @return boolean true-是 false-否 
+     */  
+    public static boolean isInteger(String string){  
+        boolean result = validByRegex("^[-+]{0,1}\\d*$", string);  
+        return result;  
+    }  
+    /** 
+     * 是否为邮政编码 
+     *  
+     * @param code 字符串 
+     * @return boolean true-是 false-否 
+     */  
+    public static boolean isZipCode(String code){  
+        boolean result = validByRegex("^[0-9]{6}$", code);  
+        return result;  
+    }
+    
+    /** 
+     * 是否符合电子邮件地址格式 
+     *  
+     * @param email 电子邮件地址 
+     * @return boolean true-是 false-否 
+     */  
+    public static boolean isEmail(String email){  
+        boolean isEmail = false;  
+        Pattern p = Pattern.compile("([\\w[.-]]+)(@)([\\w[.-]]+\\.[\\w[.-]]+)");  
+        Matcher m = p.matcher(email);  
+        if (m.matches()){  
+            isEmail = true;  
+        }  
+        return isEmail;  
+    }
+    /** 
+     * 是否符合手机号码格式 
+     *  
+     * @param mobile 手机号码 
+     * @return boolean true-是 false-否 
+     */  
+    public static boolean isMobile(String mobile){  
+        boolean isMobile = false;  
+        Pattern p = Pattern.compile("((\\()?(\\+)?(86)?1[3|5|8][0-9]{9}(\\))?$)|((\\()?(\\+)?(86)?01[3|5|8][0-9]{9}(\\))?$)");  
+        Matcher m = p.matcher(mobile);  
+        if (m.matches()){  
+            isMobile = true;  
+        }  
+        return isMobile;  
+    }
+    /** 
+     * 是否为数字 
+     *  
+     * @param text 要验证的文本 
+     * @return boolean true-是 false-否
+     * @throws Exception text为Null或空串时, 抛出异常
+     */  
+    public static boolean isNumber(String text){  
+        if (!isNotEmpty(text)){  
+            throw new NullPointerException("Text is Null Or Empty");  
+        }
+        String numberStr = "0123456789";  
+        for (int i = 0; i < text.length(); i++){  
+            char c = text.charAt(i);  
+            if (numberStr.indexOf(String.valueOf(c)) == -1)  {  
+                return false;  
+            }  
+        }  
+        return true;  
+    }
+    /** 
+     * 电话号码格式简单校验，格式为：数字-数字 
+     *  
+     * @param phone 电话号码 
+     * @return boolean true-是 false-否 
+     * @throws Exception 空串或Null抛出异常
+     */  
+    public static boolean isPhone(String phone) throws Exception{  
+        boolean isPhone = false;  
+        int index = phone.indexOf("-");  
+        if (index > 0 && index != phone.length() - 1){  
+            String phoneNum = phone.substring(0, index) + phone.substring(index + 1);  
+            if (isNumber(phoneNum)){  
+                isPhone = true;  
+            }  
+        }  
+        return isPhone;  
+    }  
+  
+    /** 
+     * 是否为密码，允许大小写字母、数字以及下划线，长度为4-16位 
+     *  
+     * @param pwd 密码 
+     * @return boolean true-是 false-否 
+     */  
+    public static boolean isPassword(String pwd){  
+        boolean ifPwd = false;  
+        Pattern p = Pattern.compile("([A-Za-z0-9_]{4,16})");  
+        Matcher m = p.matcher(pwd);  
+        if (m.matches()){  
+            ifPwd = true;  
+        }  
+        return ifPwd;  
+    }
+    /** 
+     * 转换为大写 
+     *  
+     * @param str 字符串 
+     * @return String 大写字符串 
+     * @throws Exception str为Null或空串时
+     */  
+    public static String upperCase(String str) throws Exception{  
+        if (!isNotEmpty(str)){  
+            throw new Exception("Str is null or empty");
+        }  
+        return str.toUpperCase();  
+    } 
+    /** 
+     * 转换为小写 
+     *  
+     * @param str 字符串 
+     * @return String 小写字符串 
+     * @throws Exception str为Null或空串时
+     */  
+    public static String lowerCase(String str) throws Exception{  
+    	if (!isNotEmpty(str)){  
+            throw new Exception("Str is null or empty");
+        }
+        return str.toLowerCase();  
+    }
+    /** 
+     * 把字符串由一种编码转换为另一种编码
+     *  
+     * @param string 字符串 
+     * @param from 源编码 
+     * @param to 目标编码 
+     * @return String 编码后的字符串
+     * @throws Exception 转换失败时抛出异常 
+     */  
+    public static String encodingString(String string, String from, String to)throws Exception{  
+        return new String(string.getBytes(from), to);  
+    }
+    
+    /**
+     * 生成一段随机的字符串
+     * @param length 长度
+     * @param characterType 字符类型, 可选值English, Number和Mixed
+     * @param letterType 英文字符的大小写, 仅当字符类型为English和Mixed有效,可选值Upper, Lower和Mixed
+     * @return String
+     */
+    public static String getRandomString(int length, CharacterType characterType, LetterType letterType){
+    	length = Math.abs(length);
+    	String characterSet = "";
+    	StringBuilder stringBuilder = new StringBuilder();
+    	if(characterType == CharacterType.Mixed && letterType == LetterType.Mixed){
+    		characterSet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    	}else if(characterType == CharacterType.English && letterType == LetterType.Mixed){
+    		characterSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    	}else if(characterType == CharacterType.Number){
+    		characterSet = "0123456789";
+    	}else if(characterType == CharacterType.Mixed && letterType == LetterType.Lower){
+    		characterSet = "abcdefghijklmnopqrstuvwxyz0123456789";
+    	}else if(characterType == CharacterType.Mixed && letterType == LetterType.Upper){
+    		characterSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    	}else if(characterType == CharacterType.English && letterType == LetterType.Lower){
+    		characterSet = "abcdefghijklmnopqrstuvwxyz";
+    	}else{
+    		characterSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    	}
+    	for(int i=0; i<length; i++){
+    		stringBuilder.append(characterSet.charAt((int)(Math.random()*characterSet.length())));
+    	}
+    	return stringBuilder.toString();
+    }
+    
+    public enum CharacterType{
+    	English, Number, Mixed
+    }
+    public enum LetterType{
+    	Upper, Lower, Mixed
+    }
+    
+    /**
+     * 从库里获取一个随机人名
+     * 
+     * @return String 人名
+     */
+    public static String getAName(){
+    	StringBuilder sb = new StringBuilder();
+    	int randomIndex = (int)(Math.random() * FAMILY_NAME_SET.length);
+    	sb.append(FAMILY_NAME_SET[randomIndex]);
+    	randomIndex = (int)(Math.random() * NAME_SET.length);
+    	sb.append(NAME_SET[randomIndex]);
+    	return sb.toString();
+    }
+    
+    /**
+     * 将字符串转换为二进制码列表
+     * @param string 源字符串
+     * @return <b><code>List</code></b> 列表,表内的每个元素都是一个字符的二进制编码
+     */
+    public static List<String> stringToBinaryList(String string){
+    	List<String> stringBinaryList = new LinkedList<String>();
+    	for(int i=0,length=string.length(); i<length; i++){
+    		stringBinaryList.add(Integer.toBinaryString(string.charAt(i)));
+    	}
+    	return stringBinaryList;
+    }
+    /**
+     * 将二进制编码列表转换为字符串
+     * @param binaryList 列表，表内的每个元素都是一个字符的二进制编码
+     * @return 对应的字符串
+     */
+    public static String binaryListToString(List<String> binaryList){
+    	StringBuilder sb = new StringBuilder();
+    	for(int i=0,size=binaryList.size(); i<size; i++){
+    		sb.append((char)(Integer.valueOf(binaryList.get(i),2).intValue()));
+    	}
+    	return sb.toString();
+    }
+}
