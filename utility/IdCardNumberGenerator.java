@@ -55,9 +55,7 @@ public class IdCardNumberGenerator {
 	 */
 	private IdCardNumberGenerator(){}
 	/**
-	 * 创建一个随机的身份证号<br>
-	 * 
-	 * P.S.生成的身份证号只用作测试数据,否则当心水表
+	 * 创建一个随机的身份证号<br/>
 	 * 
 	 * @return IdCardNumberGenerator类型对象
 	 * @throws ParseException 当日期格式错误时

@@ -1,7 +1,5 @@
 package utility;
 
-import java.math.BigDecimal;
-
 public final class Other {
 	private Other(){}
 	 /**
@@ -29,45 +27,57 @@ public final class Other {
     }
     
     /**
-     * 指定矩形范围内获得一个随机经纬度
+     * 返回圆形范围内一个随机的点
      * 
-     * @param maxLongitude 经度上限
-     * @param minLongitude 经度下限
-     * @param maxLatitude 纬度上限
-     * @param minLatitude 纬度下限
-     * 
-     * @return Double[] 某点的经纬度, Double[0]是经度, Double[1]是纬度
-     * */
-    public static Double[] getRandomLongitudeAndlLatitude(double maxLongitude, 
-    														   double minLongitude, 
-    														   double maxLatitude,
-    														   double minLatitude){
-    	Double[] longitudeTwoSide = checkValue(minLongitude, maxLongitude, -180.0, 180.0);
-    	Double[] latitudeTwoSide = checkValue(minLatitude, maxLatitude, -90.0, 90.0);
-    	BigDecimal randomLongitude = new BigDecimal(Math.random() * (longitudeTwoSide[1] - longitudeTwoSide[0]) + longitudeTwoSide[0]);
-    	BigDecimal randomLatitude = new BigDecimal(Math.random() * (latitudeTwoSide[1] - latitudeTwoSide[0]) + latitudeTwoSide[0]);
-    	Double[] result = new Double[2];
-    	result[0] = new Double(randomLongitude.doubleValue());
-    	result[1] = new Double(randomLatitude.doubleValue());
-    	return result;
+     * @param x 圆心的横坐标
+     * @param y 圆心的纵坐标
+     * @param maxRadius 最大半径
+     * @return <code>Point</code> 落在圆内的一个点
+     */
+    public static Point getRandomPointByCircle(double x, double y, double maxRadius){
+    	Point centerOfCircle = new Point(x, y);
+    	return getRandomPointByCircle(centerOfCircle, maxRadius);
     }
     
-    private static Double[] checkValue(double min, double max, double minLimit, double maxLimit){
-    	if(max > maxLimit || max < minLimit){
-    		max = maxLimit;
-    	}
-    	if(min < minLimit || min > maxLimit){
-    		min = minLimit;
-    	}
-    	if(min > max){
-    		double temp = min;
-    		min = max;
-    		max = temp;
-    	}
-    	Double[] result = new Double[2];
-    	result[0] = new Double(min);
-    	result[1] = new Double(max);
-    	return result;
+    /**
+     * 返回圆形范围内的一个随机的点
+     * 
+     * @param centerOfCircle 类型为<code>Point</code>,表示圆心
+     * @param maxRadius 最大半径
+     * @return <code>Point</code> 落在圆内的一个点
+     */
+    public static Point getRandomPointByCircle(Point centerOfCircle, double maxRadius){
+    	double theta = Math.random() * 2 * Math.PI;
+    	double x = Math.random() * maxRadius * Math.cos(theta);
+    	double y = Math.random() * maxRadius * Math.sin(theta);
+    	return new Point(x, y);
+    }
+    
+    /**
+     * 返回矩形范围内的一个随机的点
+     * 
+     * @param x 矩形左下角点的横坐标
+     * @param y 矩形左下角点的纵坐标
+     * @param length 矩形的长
+     * @param width 矩形的宽
+     * @return <code>Point</code> 落在矩形内的一个点
+     */
+    public static Point getRandomPointBySquare(double x, double y, double length, double width){
+    	Point lowerLeftCorner = new Point(x, y);
+    	return getRandomPointBySquare(lowerLeftCorner, length, width);
+    }
+    /**
+     * 返回矩形范围内一个随机的点
+     * 
+     * @param lowerLeftCorner 矩形范围的左下角点,类型为<code>Point</code>
+     * @param length 矩形的长
+     * @param width 矩形的宽
+     * @return <code>Point</code> 落在矩形内的一个点
+     */
+    public static Point getRandomPointBySquare(Point lowerLeftCorner, double length, double width){
+    	double x = Math.random() * length + lowerLeftCorner.getX();
+    	double y = Math.random() * width + lowerLeftCorner.getY();
+    	return new Point(x, y);
     }
     
     /**
