@@ -151,7 +151,7 @@ public final class FileOperator {
 	 * @param text 输出文本
 	 * @param encoding 编码方式
 	 * @param otherParameters 其它参数, 目前:<br>
-	 * <b/>is.append.contents</b> 是否追加内容到末尾,true/false,默认false,不追加;空值视为false.<br>
+	 * <code>is.append.contents</code> 是否追加内容到末尾,true/false,默认false,不追加;空值视为false.<br>
 	 * 注意追加文本需要自行调整文本格式.
 	 * @throws IOException 路径不存在
 	 * 

@@ -1,5 +1,7 @@
 package utility;
 
+import java.util.List;
+
 public final class Other {
 	private Other(){}
 	 /**
@@ -108,5 +110,18 @@ public final class Other {
 	    lstThreads = new Thread[noThreads];
 	    currentGroup.enumerate(lstThreads);
 	    return lstThreads;
-	}
+    }
+    
+    /**
+     * 交换列表中两个元素
+     * @param list 目标列表
+     * @param index1 第一个交换元素的位置
+     * @param index2 第二个交换元素的位置
+     */
+    public static <T> void exchangeTwoElement(List<T> list, int index1, int index2){
+    	list.add(index1, list.get(index2));
+		list.add(index2 + 1, list.get(index1));
+		list.remove(index1);
+		list.remove(index2);
+    }
 }

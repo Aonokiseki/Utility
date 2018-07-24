@@ -11,13 +11,18 @@ public final class MapOperator {
 	private MapOperator(){}
 	
 	public enum OrderBy{
-		HashCode, Number, Directory
+		HashCode, Number, Directionary
 	}
 	
 	public static Map<String,String> sortByKey(Map<String,String> map){
 		return sortByKey(map, false);
 	}
-	
+	/**
+	 * 对<code>Map</code>的<code>Key</code>按照字典顺序做排序
+	 * @param map 原<code>Map</code>
+	 * @param isDesc 是否降序
+	 * @return 排序后的<code>Map</code>
+	 */
 	public static Map<String, String> sortByKey(Map<String,String> map, boolean isDesc){
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
 		if(isDesc){
@@ -45,7 +50,14 @@ public final class MapOperator {
 	public static Map<String,String> sortByValue(Map<String,String> map, OrderBy orderBy){
 		return sortByValue(map, orderBy, false);
 	}
-	
+	/**
+	 * 对<code>Map</code>的<code>value</code>按照不同方式排序
+	 * @param map 原<code>Map</code>
+	 * @param orderBy 根据何种方式排序, 可选项 HashCode|Directionary|Number<br>
+	 * Number要求所有的value必须是数字
+	 * @param isDesc 是否降序
+	 * @return 排序后的<code>Map</code>
+	 */
 	public static Map<String, String> sortByValue(Map<String, String> map, OrderBy orderBy, boolean isDesc){
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
 		switch(orderBy){
@@ -99,7 +111,7 @@ public final class MapOperator {
 					});
 				}
 			break;
-			case Directory:
+			case Directionary:
 				if(isDesc){
 					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
 						@Override
