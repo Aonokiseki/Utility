@@ -24,11 +24,12 @@ public class AdjacencyList {
 		al.linkTwoVertex(2, 3);
 		al.linkTwoVertex(3, 4);
 		al.naturalSortVertexListById();
-		al.removeVertex(0, true);
-		List<Integer> list  = al.BreadthFirstSearch(1);
-		for(int i=0; i<list.size(); i++){
-			System.out.println(list.get(i));
+		al.removeVertex(4, true);
+		for(int i=0,size=al.vertexList.size(); i<size; i++){
+			System.out.println(al.vertexList.get(i));
 		}
+		List<Integer> list  = al.BreadthFirstSearch(0);
+		System.out.println(list);
 	}
 	
 	private List<Vertex> vertexList;
@@ -173,7 +174,7 @@ public class AdjacencyList {
 		if(force && vertexPointer.adjacentVertexList.size() == 0)
 			return this.vertexList.remove(vertexPointer);
 		Other.exchangeTwoElement(this.vertexList, 0, vertexList.indexOf(vertexPointer));
-		for(int i=1,size=vertexList.size(); i<size; i++){
+		for(int i=0,size=vertexList.size(); i<size; i++){
 			if(vertexList.get(i).adjacentVertexList.contains(vertexPointer)){
 				if(!vertexList.get(i).adjacentVertexList.remove(vertexPointer))
 					return false;
