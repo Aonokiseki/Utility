@@ -3,39 +3,78 @@ package utility;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class AdjacencyList {
-	public static void main(String[] args){
-		AdjacencyList al = new AdjacencyList();
-		al.addVertex(0, 0, "");
-		al.addVertex(1, 1, "");
-		al.addVertex(2, 2, "");
-		al.addVertex(3, 3, "");
-		al.addVertex(4, 4, "");
-		
-		al.linkTwoVertex(0, 1);
-		al.linkTwoVertex(0, 4);
-		al.linkTwoVertex(0, 3);
-		al.linkTwoVertex(1, 4);
-		al.linkTwoVertex(1, 2);
-		al.linkTwoVertex(2, 3);
-		al.linkTwoVertex(3, 4);
-		al.naturalSortVertexListById();
-		al.removeVertex(4, true);
-		for(int i=0,size=al.vertexList.size(); i<size; i++){
-			System.out.println(al.vertexList.get(i));
-		}
-		List<Integer> list  = al.BreadthFirstSearch(0);
-		System.out.println(list);
-	}
 	
 	private List<Vertex> vertexList;
 	
 	public AdjacencyList(){
 		vertexList = new LinkedList<Vertex>();
+	}
+	
+	/**
+	 * 查看邻接表<br>
+	 * @return Map中的每个key都是一个顶点的id<br>
+	 * value是每个顶点的相邻顶点id列表
+	 */
+	public Map<Integer, List<Integer>> view(){
+		Map<Integer, List<Integer>> result = new HashMap<Integer, List<Integer>>();
+		int vertexPointer = -1;
+		List<Integer> adjacencyPerVertex = null;
+		for(int i=0,size=vertexList.size(); i<size; i++){
+			vertexPointer = vertexList.get(i).id;
+			adjacencyPerVertex = new ArrayList<Integer>();
+			for(int j=0, adjacencySize = vertexList.get(i).adjacentVertexList.size(); j<adjacencySize; j++){
+				adjacencyPerVertex.add(vertexList.get(i).adjacentVertexList.get(j).id);
+			}
+			result.put(vertexPointer, adjacencyPerVertex);
+		}
+		return result;
+	}
+	
+	/**
+	 * 根据id获取指定节点的描述信息, 获取不到节点时返回null
+	 * @param targetId
+	 * @return
+	 */
+	public String getVertexInfo(int targetId){
+		Vertex vertexPointer = findVertex(targetId);
+		if(vertexPointer == null)
+			return null;
+		return vertexPointer.info;
+	}
+	
+	/**
+	 * 根据id获取指定节点的value, 获取不到节点时返回Integer.MIN_VALUE
+	 * @param targetId
+	 * @return
+	 */
+	public int getVertexValue(int targetId){
+		Vertex vertexPointer = findVertex(targetId);
+		if(vertexPointer == null)
+			return Integer.MIN_VALUE;
+		return vertexPointer.value;
+	}
+	
+	public boolean setVertexInfo(int targetId, String info){
+		Vertex vertexPointer = findVertex(targetId);
+		if(vertexPointer == null)
+			return false;
+		vertexPointer.info = info;
+		return true;
+	}
+	
+	public boolean setVertexValue(int targetId, int value){
+		Vertex vertexPointer = findVertex(targetId);
+		if(vertexPointer == null)
+			return false;
+		vertexPointer.value = value;
+		return true;
 	}
 	
 	/**
@@ -52,6 +91,7 @@ public class AdjacencyList {
 			this.vertexList.get(i).naturalSortAdjacentVertexById();
 		}
 	}
+	
 	/**
 	 * 添加一个顶点到图中
 	 * @param id 顶点id, 不允许和已添加的重复
@@ -101,18 +141,14 @@ public class AdjacencyList {
 	 * @return <code>List</code> id的列表
 	 */
 	public List<Integer> BreadthFirstSearch(int startId){
-		int startIndex = -1;
-		for(int i=0,size=vertexList.size(); i<size; i++){
-			if(vertexList.get(i).id == startId){
-				startIndex = i;break;
-			}
-		}
-		if(startIndex < 0)
+		Vertex vertexPointer = findVertex(startId);
+		if(vertexPointer == null)
 			return new ArrayList<Integer>();
+		int startIndex = vertexList.indexOf(vertexPointer);
 		List<Integer> searchPath = new ArrayList<Integer>();
 		searchPath.add(vertexList.get(startIndex).id);
 		Other.exchangeTwoElement(this.vertexList, 0, startIndex);
-		Vertex vertexPointer = null;
+		vertexPointer = null;
 		for(int i=0,size=this.vertexList.size(); i<size; i++){
 			vertexPointer = vertexList.get(i);
 			for(int j=0,adjacenySize=vertexPointer.adjacentVertexList.size(); j<adjacenySize; j++){
@@ -152,12 +188,9 @@ public class AdjacencyList {
 	}
 	
 	/**
-	 * 从图中移除一个顶点
-	 * @param targetId 移除顶点的id
-	 * @param force 对于度不为0的顶点, 是否强制移除
-	 * @return boolean 移除是否成功
+	 * 尝试在图中寻找目标节点,找不到则返回null
 	 */
-	public boolean removeVertex(int targetId, boolean force){
+	private Vertex findVertex(int targetId){
 		Vertex vertexPointer = null;
 		for(int i=0,size=this.vertexList.size(); i<size ;i++){
 			if(vertexList.get(i).id == targetId){
@@ -165,6 +198,17 @@ public class AdjacencyList {
 				break;
 			}
 		}
+		return vertexPointer;
+	}
+	
+	/**
+	 * 从图中移除一个顶点
+	 * @param targetId 移除顶点的id
+	 * @param force 对于度不为0的顶点, 是否强制移除
+	 * @return boolean 移除是否成功
+	 */
+	public boolean removeVertex(int targetId, boolean force){
+		Vertex vertexPointer = findVertex(targetId);
 		if(vertexPointer == null)
 			return false;
 		if(!force && vertexPointer.adjacentVertexList.size() > 0)
@@ -173,7 +217,6 @@ public class AdjacencyList {
 			return this.vertexList.remove(vertexPointer);
 		if(force && vertexPointer.adjacentVertexList.size() == 0)
 			return this.vertexList.remove(vertexPointer);
-		Other.exchangeTwoElement(this.vertexList, 0, vertexList.indexOf(vertexPointer));
 		for(int i=0,size=vertexList.size(); i<size; i++){
 			if(vertexList.get(i).adjacentVertexList.contains(vertexPointer)){
 				if(!vertexList.get(i).adjacentVertexList.remove(vertexPointer))
