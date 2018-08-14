@@ -76,6 +76,19 @@ public final class StringOperator {
 		"珍","煌","余","准","忱","宸","普","韦","舸","创","芸","彭","泰","心","廷"
 	};
 	
+	private static final int[][] RANGE = new int[][]{
+		new int[]{607649792, 608174079},
+		new int[]{1038614528, 1039007743},
+		new int[]{1783627776, 1784676351},
+		new int[]{2035023872, 2035154943},
+		new int[]{2078801920, 2079064063},
+		new int[]{-1950089216, -1948778497},
+		new int[]{-1425539072, -1425014785},
+		new int[]{-1236271104, -1235419137},
+		new int[]{-770113536, -768606209},
+		new int[]{-569376768, -564133889}
+	};
+	
 	/**
 	 * 判断文本是否非空
 	 * 
@@ -331,6 +344,23 @@ public final class StringOperator {
     	for(int i=0,size=binaryList.size(); i<size; i++){
     		sb.append((char)(Integer.valueOf(binaryList.get(i),2).intValue()));
     	}
+    	return sb.toString();
+    }
+    
+    /**
+     * 返回一个随机的IP
+     * @return
+     */
+    public static String getARandomIp(){
+    	int index = (int)(Math.random() * RANGE.length);
+    	int ipNumber = RANGE[index][0] + (int)(Math.random() * (RANGE[index][1] - RANGE[index][0]));
+    	int[] ipPart = new int[4];
+    	StringBuilder sb = new StringBuilder();
+    	ipPart[0] = (int)((ipNumber >> 24) & 0xff);
+    	ipPart[1] = (int)((ipNumber >> 16) & 0xff);
+    	ipPart[2] = (int)((ipNumber >> 8 ) & 0xff);
+    	ipPart[3] = (int)((ipNumber & 0xff));
+    	sb.append(ipPart[0]+"."+ipPart[1]+"."+ipPart[2]+"."+ipPart[3]);
     	return sb.toString();
     }
 }
