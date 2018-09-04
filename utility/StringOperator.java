@@ -10,6 +10,8 @@ public final class StringOperator {
 	 * 防止类被实例化
 	 */
 	private StringOperator(){}
+	
+	private final static double THREE_WORD_NAME_CHANCE = 0.5;
 	private final static String[] FAMILY_NAME_SET = new String[]{
 		"赵","钱","孙","李","周","吴","郑","王","冯","陈",
 		"诸","卫","蒋","沈","韩","杨","朱","秦","尤","许",
@@ -88,7 +90,6 @@ public final class StringOperator {
 		new int[]{-770113536, -768606209},
 		new int[]{-569376768, -564133889}
 	};
-	
 	/**
 	 * 判断文本是否非空
 	 * 
@@ -102,8 +103,6 @@ public final class StringOperator {
         }
         return result;
     }
-	
-	
 	/** 
      * 检验字符串是否匹配指定的正则表达式 
      *  
@@ -214,7 +213,6 @@ public final class StringOperator {
         }  
         return isPhone;  
     }  
-  
     /** 
      * 是否为密码，允许大小写字母、数字以及下划线，长度为4-16位 
      *  
@@ -231,30 +229,98 @@ public final class StringOperator {
         return ifPwd;  
     }
     /** 
-     * 转换为大写 
+     * 转换为大写,只对其中的英文字母有效 
      *  
      * @param str 字符串 
      * @return String 大写字符串 
      * @throws Exception str为Null或空串时
      */  
-    public static String upperCase(String str) throws Exception{  
+    public static String upperCase(String str){  
         if (!isNotEmpty(str)){  
-            throw new Exception("Str is null or empty");
-        }  
-        return str.toUpperCase();  
+            return "";
+        }
+        char c;
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<str.length(); i++){
+        	c = str.charAt(i);
+        	if(c >= 'a' && c <= 'z'){
+        		sb.append((char)(c-32));
+        	}else{
+        		sb.append(c);
+        	}
+        }
+        return sb.toString();
     } 
     /** 
-     * 转换为小写 
+     * 转换为小写,只对其中的英文字母有效  
      *  
      * @param str 字符串 
      * @return String 小写字符串 
      * @throws Exception str为Null或空串时
      */  
-    public static String lowerCase(String str) throws Exception{  
+    public static String lowerCase(String str){  
     	if (!isNotEmpty(str)){  
-            throw new Exception("Str is null or empty");
+            return "";
         }
-        return str.toLowerCase();  
+    	char c;
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<str.length(); i++){
+         	c = str.charAt(i);
+         	if(c >= 'A' && c <= 'Z'){
+         		sb.append((char)(c+32));
+         	}else{
+         		sb.append(c);
+         	}
+         }
+         return sb.toString();
+    }
+    /**
+     * 将字符串中的英文和数字全角变半角
+     * 
+     * @param str 源字符串
+     * @return
+     */
+    public static String toHalfAngle(String str){
+    	if (!isNotEmpty(str))
+            return "";
+    	StringBuilder sb = new StringBuilder();
+    	char c;int v;
+    	for(int i=0; i<str.length(); i++){
+    		c = str.charAt(i);v = (int)c;
+    		if(
+    			(v >= 65296 && v <= 65305) ||
+    			(v >= 65313 && v <= 65338) ||
+    			(v >= 65345 && v <= 65370) ){
+    			sb.append((char)(c-65248));
+    		}else{
+    			sb.append(c);
+    		}
+    	}
+    	return sb.toString();
+    }
+    /**
+     * 将字符串中的英文和数字半角变全角
+     * 
+     * @param str 源字符串
+     * @return
+     */
+    public static String toFullAngle(String str){
+    	if (!isNotEmpty(str))
+            return "";
+    	StringBuilder sb = new StringBuilder();
+    	char c;int v;
+    	for(int i=0; i<str.length(); i++){
+    		c = str.charAt(i);v = (int)c;
+    		if(
+    			(v >= 48 && v <= 57) ||
+    			(v >= 65 && v <= 90) ||
+    			(v >= 97 && v <= 122) ){
+    			sb.append((char)(c+65248));
+    		}else{
+    			sb.append(c);
+    		}
+    	}
+    	return sb.toString();
     }
     /** 
      * 把字符串由一种编码转换为另一种编码
@@ -319,6 +385,11 @@ public final class StringOperator {
     	sb.append(FAMILY_NAME_SET[randomIndex]);
     	randomIndex = (int)(Math.random() * NAME_SET.length);
     	sb.append(NAME_SET[randomIndex]);
+    	double chance = Math.random();
+    	if(chance < THREE_WORD_NAME_CHANCE){
+    		randomIndex = (int)(Math.random() * NAME_SET.length);
+    		sb.append(NAME_SET[randomIndex]);
+    	}
     	return sb.toString();
     }
     

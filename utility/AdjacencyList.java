@@ -147,7 +147,7 @@ public class AdjacencyList {
 		int startIndex = vertexList.indexOf(vertexPointer);
 		List<Integer> searchPath = new ArrayList<Integer>();
 		searchPath.add(vertexList.get(startIndex).id);
-		Other.exchangeTwoElement(this.vertexList, 0, startIndex);
+		Other.exchangeTwoElementOfList(this.vertexList, 0, startIndex);
 		vertexPointer = null;
 		for(int i=0,size=this.vertexList.size(); i<size; i++){
 			vertexPointer = vertexList.get(i);

@@ -255,7 +255,7 @@ public final class FileOperator {
 			throw new IOException(zipPointer.getAbsolutePath()+" already existed!");
 		}
 		boolean cutParentPath = false;
-		if(option.get("cut.parent.path") != null && "true".equals(option.get("cut.parent.path").trim())){
+		if(option != null && option.get("cut.parent.path") != null && "true".equals(option.get("cut.parent.path").trim())){
 			cutParentPath = true;
 		}
 		//======================================================//

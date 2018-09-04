@@ -1,134 +1,56 @@
 package utility;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import utility.DateOperator.FormatItem;
+
 public final class MapOperator {
 	private MapOperator(){}
 	
+	public enum SortItem{
+		Key, Value;
+	}
 	public enum OrderBy{
-		HashCode, Number, Directionary
+		Natural, Number, Calendar, HashCode
 	}
 	
 	public static Map<String,String> sortByKey(Map<String,String> map){
 		return sortByKey(map, false);
 	}
 	/**
-	 * 对<code>Map</code>的<code>Key</code>按照字典顺序做排序
-	 * @param map 原<code>Map</code>
+	 * 对Map的Key按照字典顺序做排序
+	 * @param map 原Map
 	 * @param isDesc 是否降序
-	 * @return 排序后的<code>Map</code>
+	 * @return 排序后的Map
 	 */
 	public static Map<String, String> sortByKey(Map<String,String> map, boolean isDesc){
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
-		if(isDesc){
-			Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-				@Override
-				public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-					return arg1.getKey().compareTo(arg0.getKey());
-				}
-			});
-		}else{
-			Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-				@Override
-				public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-					return arg0.getKey().compareTo(arg1.getKey());
-				}
-			});
-		}
+		Collections.sort(list, new EntryComparator(SortItem.Key, null, null, isDesc));
 		Map<String, String> newMap = new LinkedHashMap<String, String>();
 		for (int i = 0; i < list.size(); i++) {  
             newMap.put(list.get(i).getKey(), list.get(i).getValue());  
         }  
         return newMap;  
 	}
-	
-	public static Map<String,String> sortByValue(Map<String,String> map, OrderBy orderBy){
-		return sortByValue(map, orderBy, false);
-	}
 	/**
-	 * 对<code>Map</code>的<code>value</code>按照不同方式排序
-	 * @param map 原<code>Map</code>
-	 * @param orderBy 根据何种方式排序, 可选项 HashCode|Directionary|Number<br>
-	 * Number要求所有的value必须是数字
+	 * 对Map的value按照不同方式排序, 此方法不会破坏原Map
+	 * @param map 原Map
+	 * @param orderBy 根据何种方式排序, 可选项 HashCode-哈希|Natural-字段|Number-数值|Calendar-日期<br>
+	 * Number要求所有的value必须是数字,Calendar要求所有的value必须是日期, 若value格式非法, 则不会排序
+	 * @param formatItem 如果按照日历排序,则需在此处指明日期字符串的格式, 另见{@link DateOperator.FormatItem}
 	 * @param isDesc 是否降序
-	 * @return 排序后的<code>Map</code>
+	 * @return 排序后的Map
 	 */
-	public static Map<String, String> sortByValue(Map<String, String> map, OrderBy orderBy, boolean isDesc){
+	public static Map<String, String> sortByValue(Map<String, String> map, OrderBy orderBy, FormatItem formatItem, boolean isDesc){
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
-		switch(orderBy){
-			case HashCode:
-				if(isDesc){
-					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-						@Override
-						public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-							return arg1.getValue().hashCode() - arg0.getValue().hashCode();
-						}
-					});
-				}else{
-					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-						@Override
-						public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-							return arg0.getValue().hashCode() - arg1.getValue().hashCode();
-						}
-					});
-				}
-			break;
-			case Number:
-				if(isDesc){
-					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-						@Override
-						public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-							double difference = Double.valueOf(arg1.getValue()) - Double.valueOf(arg0.getValue());
-							int result = 0;
-							if(difference < 0)
-								result = -1;
-							else if(difference == 0)
-								result = 0;
-							else
-								result = 1;
-							return result;
-						}
-					});
-				}else{
-					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-						@Override
-						public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-							double difference = Double.valueOf(arg0.getValue()) - Double.valueOf(arg1.getValue());
-							int result = 0;
-							if(difference < 0)
-								result = -1;
-							else if(difference == 0)
-								result = 0;
-							else
-								result = 1;
-							return result;
-						}
-					});
-				}
-			break;
-			case Directionary:
-				if(isDesc){
-					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-						@Override
-						public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-							return arg1.getValue().compareTo(arg0.getValue());
-						}
-					});
-				}else{
-					Collections.sort(list, new Comparator<Map.Entry<String, String>>(){
-						@Override
-						public int compare(Entry<String,String>arg0, Entry<String,String>arg1){
-							return arg0.getValue().compareTo(arg1.getValue());
-						}
-					});
-				}
-			break;
-		}
+		Collections.sort(list, new EntryComparator(SortItem.Value, orderBy, formatItem, isDesc));
 		Map<String, String> newMap = new LinkedHashMap<String, String>();
 		for (int i = 0; i < list.size(); i++) {  
             newMap.put(list.get(i).getKey(), list.get(i).getValue());  
@@ -151,5 +73,75 @@ public final class MapOperator {
 		if(map.get(key) == null || "".equals(map.get(key).trim()))
 			return false;
 		return true;
+	}
+	/**
+	 * 
+	 * 内部类, 实现了比较器接口的一个方法:compare(), 目的是为存放于Map中，简单的数据做排序
+	 *
+	 */
+	private static class EntryComparator implements Comparator<Map.Entry<String,String>>{
+		private SortItem sortItem;
+		private OrderBy orderBy;
+		private FormatItem formatItem;
+		private boolean isDESC;
+		
+		public EntryComparator(SortItem sortItem, OrderBy orderBy, FormatItem formatItem, boolean isDESC){
+			this.orderBy = orderBy;
+			this.sortItem = sortItem;
+			this.isDESC = isDESC;
+			this.formatItem = formatItem;
+		}
+		@Override
+		public int compare(Entry<String, String> arg0, Entry<String, String> arg1) {
+			if(sortItem == SortItem.Key){
+				if(isDESC)
+					return arg1.getKey().compareTo(arg0.getKey());
+				return arg0.getKey().compareTo(arg1.getKey());
+			}
+			if(orderBy == OrderBy.Natural){
+				if(isDESC)
+					return arg1.getValue().compareTo(arg0.getValue());
+				return arg0.getValue().compareTo(arg1.getValue());
+			}
+			if(orderBy == OrderBy.HashCode){
+				if(isDESC)
+					return arg1.getValue().hashCode() - arg0.getValue().hashCode();
+				return arg0.getValue().hashCode() - arg1.getValue().hashCode();
+			}
+			if(orderBy == OrderBy.Calendar)
+				try{
+					return compare(
+							DateOperator.stringToCalendar(arg0.getValue(), formatItem), 
+							DateOperator.stringToCalendar(arg1.getValue(), formatItem), 
+							isDESC);
+				}catch (ParseException e) {
+					return 0;
+				}
+			try{
+				return compare(Double.valueOf(arg0.getValue()), Double.valueOf(arg1.getValue()), isDESC);
+			}catch(NumberFormatException e){
+				return 0;
+			}
+		}
+		public int compare(double arg0, double arg1, boolean isDESC){
+			if(isDESC){
+				if(arg1 - arg0 > 0) return 1;
+				if(arg1 - arg0 < 0) return -1;
+				return 0;
+			}
+			if(arg0 - arg1 > 0) return 1;
+			if(arg0 - arg1 < 0) return -1;
+			return 0;
+		}
+		public int compare(Calendar c1, Calendar c2, boolean isDESC){
+			if(isDESC){
+				if(c2.after(c1)) return 1;
+				if(c2.before(c1)) return -1;
+				return 0;
+			}
+			if(c1.after(c2)) return 1;
+			if(c1.before(c2)) return -1;
+			return 0;
+		}
 	}
 }

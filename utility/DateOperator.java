@@ -7,7 +7,15 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public final class DateOperator {
-	
+	/**
+	 * 指明 String 类型的日期转换为 Calendar 类型时如何转换
+	 * @param yyyy 如：2018
+	 * @param yyyyMM 如：2018/09 
+	 * @param yyyyMMdd 如：2018/09/01
+	 * @param yyyyMMddHHmmss 如：2018/09/01 00:00:00
+	 * @param idcard 如：20180901
+	 *
+	 */
 	public enum FormatItem{
 		yyyy("yyyy"),yyyyMM("yyyy/MM"),yyyyMMdd("yyyy/MM/dd"),yyyyMMddHHmmss("yyyy/MM/dd HH:mm:ss"),idcard("yyyyMMdd");
 		

@@ -27,6 +27,19 @@ public final class Other {
     		array[j] = temp;
     	}
     }
+    /**
+     * 交换数组中两个元素的位置
+     * @param array
+     * @param index1
+     * @param index2
+     */
+    public static <T> void exchangeTwoElementOfArray(T[] array, int index1, int index2){
+    	if(index1 < 0 || index1 > (array.length - 1) || index2 < 0 || index2 > (array.length - 1))
+    		return;
+    	T temp = array[index1];
+    	array[index1] = array[index2];
+    	array[index2] = temp;
+    }
     
     /**
      * 返回圆形范围内一个随机的点
@@ -90,11 +103,12 @@ public final class Other {
      */
     public static String exceptionToStackTrace(Throwable throwable){
     	StringBuilder stringBuilder = new StringBuilder();
-    	String lineSeparator = System.lineSeparator();
+    	stringBuilder.append(throwable.getMessage()+System.lineSeparator());
     	StackTraceElement[] traces = throwable.getStackTrace();
-    	for(StackTraceElement ste : traces){
-    		stringBuilder.append(ste.toString()+lineSeparator);
+    	for(int i=0; i<traces.length-1; i++){
+    		stringBuilder.append(traces[i].toString() + System.lineSeparator());
     	}
+    	stringBuilder.append(traces[traces.length-1].toString());
     	return stringBuilder.toString();
     }
     
@@ -118,7 +132,9 @@ public final class Other {
      * @param index1 第一个交换元素的位置
      * @param index2 第二个交换元素的位置
      */
-    public static <T> void exchangeTwoElement(List<T> list, int index1, int index2){
+    public static <T> void exchangeTwoElementOfList(List<T> list, int index1, int index2){
+    	if(index1 < 0 || (index1 > list.size() - 1) || index2 < 0 || (index2 > list.size() - 1))
+    		return;
     	list.add(index1, list.get(index2));
 		list.add(index2 + 1, list.get(index1));
 		list.remove(index1);
