@@ -42,12 +42,21 @@ public final class MathOperator {
     public static double[] findMaxAndMin(double[] array){
     	double[] result = new double[]{Double.MAX_VALUE,Double.MIN_VALUE};
     	for(int i=0;i<array.length;i++){
-    		if(array[i] < result[0]){
+    		if(array[i] < result[0])
     			result[0] = array[i];
-    		}
-    		if(array[i] > result[1]){
+    		if(array[i] > result[1])
     			result[1] = array[i];
-    		}
+    	}
+    	return result;
+    }
+    
+    public static <T extends Number> double[] findMaxAndMin(List<T> list){
+    	double[] result = new double[]{Double.MAX_VALUE, Double.MIN_VALUE};
+    	for(int i=0, size=list.size(); i<size; i++){
+    		if(list.get(i).doubleValue() < result[0])
+    			result[0] = list.get(i).doubleValue();
+    		if(list.get(i).doubleValue() > result[1])
+    			result[1] = list.get(i).doubleValue();
     	}
     	return result;
     }
@@ -232,12 +241,9 @@ public final class MathOperator {
     	primesList.add(2);
     	if(n == 2)
     		return primesList;
-    	primesList.add(3);
-    	if(n == 3)
-    		return primesList;
     	boolean isPrimes = false;
-    	for(int i=5; i<n; i++){
-    		for(int j=0; j<primesList.size(); j++){
+    	for(int i=3; i<n; i+=2){
+    		for(int j=0,size=primesList.size(); j<size; j++){
     			if(i % primesList.get(j) == 0){
     				isPrimes = false;
     				break;
@@ -248,5 +254,36 @@ public final class MathOperator {
     			primesList.add(i);
     	}
     	return primesList;
+    }
+    /**
+     * 取前n位质数
+     * @param count 取出的数量,小于1时返回空表
+     * @return List&ltInteger&gt质数表
+     */
+    public static List<Integer> getPreviousNPrimes(int count){
+    	if(count < 1)
+    		return new ArrayList<Integer>();
+    	if(count == 1){
+    		List<Integer> primes = new ArrayList<Integer>(1);
+        	primes.add(2);
+        	return primes;
+    	}
+    	List<Integer> primes = new ArrayList<Integer>(count);
+    	primes.add(2);
+    	boolean isPrimes = false;
+    	for(int i=3; i<Integer.MAX_VALUE; i+=2){
+    		for(int j=0,size=primes.size(); j<size; j++){
+    			if(i % primes.get(j) == 0){
+    				isPrimes = false;
+    				break;
+    			}
+    			isPrimes = true;
+    		}
+    		if(isPrimes)
+    			primes.add(i);
+    		if(primes.size() >= count)
+    			break;
+    	}
+    	return primes;
     }
 }

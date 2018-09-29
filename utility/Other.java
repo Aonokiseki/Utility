@@ -40,59 +40,89 @@ public final class Other {
     	array[index1] = array[index2];
     	array[index2] = temp;
     }
-    
     /**
-     * 返回圆形范围内一个随机的点
-     * 
-     * @param x 圆心的横坐标
-     * @param y 圆心的纵坐标
+     * 返回指定圆形范围内的一个坐标
+     * @param x 圆心横坐标
+     * @param y 圆心纵坐标
      * @param maxRadius 最大半径
-     * @return <code>Point</code> 落在圆内的一个点
+     * @return Coordinate 坐标
      */
-    public static Point getRandomPointByCircle(double x, double y, double maxRadius){
-    	Point centerOfCircle = new Point(x, y);
-    	return getRandomPointByCircle(centerOfCircle, maxRadius);
+    public static Coordinate getRandomCoordinateByCircle(double x, double y, double maxRadius){
+    	Coordinate c = new Coordinate(x, y);
+    	return getRandomCoordinateByCircle(c, 2, maxRadius);
     }
-    
     /**
-     * 返回圆形范围内的一个随机的点
-     * 
-     * @param centerOfCircle 类型为<code>Point</code>,表示圆心
+     * 返回指定球形范围内的一个坐标
+     * @param x 球心x轴坐标
+     * @param y 球心y轴坐标
+     * @param z 球心z轴坐标
      * @param maxRadius 最大半径
-     * @return <code>Point</code> 落在圆内的一个点
+     * @return Coordinate 坐标
      */
-    public static Point getRandomPointByCircle(Point centerOfCircle, double maxRadius){
+    public static Coordinate getRandomCoordinateBySphere(double x, double y, double z, double maxRadius){
+    	Coordinate c = new Coordinate(x, y, z);
+    	return getRandomCoordinateByCircle(c, 3, maxRadius);
+    }
+    /**
+     * 返回指定范围内的一个坐标<br>
+     * 
+     * 三维<br>
+     * θ∈[0, 2π], φ∈[0, π]<br>
+     * x = R * cos(θ) * sin(φ)<br>
+     * y = R * sin(θ) * sin(φ)<br>
+     * z = R * cos(φ)<br>
+     * <br>
+     * 二维<br>
+     * θ∈[0, 2π]<br>
+     * x = R * cos(θ)<br>
+     * y = R * sin(θ)<br>
+     * 
+     * @param centerOfCircle 圆心/球心坐标
+     * @param dimension 维数, 2或3
+     * @param maxRadius 最大半径
+     * @return Coordinate
+     */
+    private static Coordinate getRandomCoordinateByCircle(Coordinate centerOfCircle, int dimension, double maxRadius){
     	double theta = Math.random() * 2 * Math.PI;
+    	double phi = Math.random() * Math.PI;
     	double x = Math.random() * maxRadius * Math.cos(theta);
     	double y = Math.random() * maxRadius * Math.sin(theta);
-    	return new Point(x, y);
-    }
-    
-    /**
-     * 返回矩形范围内的一个随机的点
-     * 
-     * @param x 矩形左下角点的横坐标
-     * @param y 矩形左下角点的纵坐标
-     * @param length 矩形的长
-     * @param width 矩形的宽
-     * @return <code>Point</code> 落在矩形内的一个点
-     */
-    public static Point getRandomPointBySquare(double x, double y, double length, double width){
-    	Point lowerLeftCorner = new Point(x, y);
-    	return getRandomPointBySquare(lowerLeftCorner, length, width);
+    	if(dimension == 3){
+    		x = x * Math.sin(phi);
+        	y = y * Math.sin(phi);
+        	double z = Math.random() * maxRadius * Math.cos(phi);
+        	return new Coordinate(x, y, z);
+    	}
+    	return new Coordinate(x, y);
     }
     /**
-     * 返回矩形范围内一个随机的点
-     * 
-     * @param lowerLeftCorner 矩形范围的左下角点,类型为<code>Point</code>
-     * @param length 矩形的长
-     * @param width 矩形的宽
-     * @return <code>Point</code> 落在矩形内的一个点
+     * 返回平面矩形范围内一个随机坐标
+     * @param x 矩形在x轴上的最小值
+     * @param y 矩形在y轴上的最小值
+     * @param length 矩形长度,决定最终的x
+     * @param width 矩形的宽度，决定最终的y
+     * @return Coordinate
      */
-    public static Point getRandomPointBySquare(Point lowerLeftCorner, double length, double width){
-    	double x = Math.random() * length + lowerLeftCorner.getX();
-    	double y = Math.random() * width + lowerLeftCorner.getY();
-    	return new Point(x, y);
+    public static Coordinate getRandomCoordinateBySquare(double x, double y, double length, double width){
+    	double pX = Math.random() * length + x;
+    	double pY = Math.random() * width + y;
+    	return new Coordinate(pX, pY);
+    }
+    /**
+     * 返回空间长方体范围内的一个随机坐标
+     * @param x 长方体在x轴上的最小值
+     * @param y 长方体在y轴上的最小值
+     * @param z 长方体在z轴上的最小值
+     * @param length 长方体长度,决定最终的x
+     * @param width 长方体宽度,决定最终的y
+     * @param heigh 长方体的高, 决定最终的z
+     * @return Coordinate
+     */
+    public static Coordinate getRandomCoordinateByCuboid(double x, double y, double z, double length, double width, double heigh){
+    	double pX = Math.random() * length + x;
+    	double pY = Math.random() * width + y;
+    	double pZ = Math.random() * heigh + z;
+    	return new Coordinate(pX, pY, pZ);
     }
     
     /**

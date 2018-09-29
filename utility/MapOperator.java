@@ -20,10 +20,6 @@ public final class MapOperator {
 	public enum OrderBy{
 		Natural, Number, Calendar, HashCode
 	}
-	
-	public static Map<String,String> sortByKey(Map<String,String> map){
-		return sortByKey(map, false);
-	}
 	/**
 	 * 对Map的Key按照字典顺序做排序
 	 * @param map 原Map
@@ -34,15 +30,14 @@ public final class MapOperator {
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
 		Collections.sort(list, new EntryComparator(SortItem.Key, null, null, isDesc));
 		Map<String, String> newMap = new LinkedHashMap<String, String>();
-		for (int i = 0; i < list.size(); i++) {  
-            newMap.put(list.get(i).getKey(), list.get(i).getValue());  
-        }  
+		for(int i=0; i<list.size(); i++)
+            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
         return newMap;  
 	}
 	/**
 	 * 对Map的value按照不同方式排序, 此方法不会破坏原Map
 	 * @param map 原Map
-	 * @param orderBy 根据何种方式排序, 可选项 HashCode-哈希|Natural-字段|Number-数值|Calendar-日期<br>
+	 * @param orderBy 根据何种方式排序, 可选项 HashCode-哈希|Natural-字典|Number-数值|Calendar-日期<br>
 	 * Number要求所有的value必须是数字,Calendar要求所有的value必须是日期, 若value格式非法, 则不会排序
 	 * @param formatItem 如果按照日历排序,则需在此处指明日期字符串的格式, 另见{@link DateOperator.FormatItem}
 	 * @param isDesc 是否降序
@@ -52,9 +47,8 @@ public final class MapOperator {
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
 		Collections.sort(list, new EntryComparator(SortItem.Value, orderBy, formatItem, isDesc));
 		Map<String, String> newMap = new LinkedHashMap<String, String>();
-		for (int i = 0; i < list.size(); i++) {  
-            newMap.put(list.get(i).getKey(), list.get(i).getValue());  
-        }  
+		for(int i=0; i<list.size(); i++)
+            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
         return newMap;  
 	}
 	
@@ -108,15 +102,18 @@ public final class MapOperator {
 					return arg1.getValue().hashCode() - arg0.getValue().hashCode();
 				return arg0.getValue().hashCode() - arg1.getValue().hashCode();
 			}
-			if(orderBy == OrderBy.Calendar)
+			if(orderBy == OrderBy.Calendar){
+				int result = 0;
 				try{
-					return compare(
+					result = compare(
 							DateOperator.stringToCalendar(arg0.getValue(), formatItem), 
 							DateOperator.stringToCalendar(arg1.getValue(), formatItem), 
 							isDESC);
-				}catch (ParseException e) {
+				}catch (ParseException | NullPointerException e) {
 					return 0;
 				}
+				return result;
+			}
 			try{
 				return compare(Double.valueOf(arg0.getValue()), Double.valueOf(arg1.getValue()), isDESC);
 			}catch(NumberFormatException e){

@@ -16,7 +16,7 @@ public final class DateOperator {
 	 * @param idcard 如：20180901
 	 *
 	 */
-	public enum FormatItem{
+	public static enum FormatItem{
 		yyyy("yyyy"),yyyyMM("yyyy/MM"),yyyyMMdd("yyyy/MM/dd"),yyyyMMddHHmmss("yyyy/MM/dd HH:mm:ss"),idcard("yyyyMMdd");
 		
 		private String formatString;
@@ -29,6 +29,7 @@ public final class DateOperator {
 		}
 	}
 	public static final long THE_NUMBER_OF_MILLISECONDS_IN_ONE_DAY = 86400000;
+	public static final long THE_NUMBER_OF_MILLISECONDS_IN_ONE_HOUR = 3600000;
 	/*
 	 * 防止实例化
 	 */
@@ -71,6 +72,12 @@ public final class DateOperator {
 		Calendar calendarEnd = stringToCalendar(date2, formatItem);
 		long result = Math.abs(calendarEnd.getTimeInMillis() - calendarStart.getTimeInMillis());
 		return result/THE_NUMBER_OF_MILLISECONDS_IN_ONE_DAY;
+	}
+	public static long hoursBetweenTwoTimes(String time1, String time2) throws ParseException{
+		Calendar calendar1 = stringToCalendar(time1, FormatItem.yyyyMMddHHmmss);
+		Calendar calendar2 = stringToCalendar(time2, FormatItem.yyyyMMddHHmmss);
+		long result = Math.abs(calendar1.getTimeInMillis() - calendar2.getTimeInMillis());
+		return result/THE_NUMBER_OF_MILLISECONDS_IN_ONE_HOUR;
 	}
 	/**
 	 * 返回指定日期/时间范围内的一个日期/时间
