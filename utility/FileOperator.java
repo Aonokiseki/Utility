@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -26,6 +28,10 @@ import java.util.zip.ZipOutputStream;
 public final class FileOperator {
 	
 	private static final int BUFFER_SIZE = 16384;
+	private static final String IS_APPEND_CONTENTS = "is.append.contents";
+	private static final String IS_CONTAINS_DIRECTORY = "is.contains.directory";
+	private static final String FILE_SEPARATOR = "file.separator";
+	private static final String CUT_PARENT_PATH = "cut.parent.path";
 	/*
 	 * 防止实例化
 	 */
@@ -120,7 +126,6 @@ public final class FileOperator {
 		in.close();
 		return byteArray;
 	}
-	
 	/**
 	 * 以UTF-8编码方式写文件
 	 * 
@@ -158,8 +163,8 @@ public final class FileOperator {
 	 */
 	public static void write(String targetSavingPath, String text, String encoding, Map<String,String>otherParameters) throws IOException{
 		boolean isAppend = false;
-		if(otherParameters != null && !otherParameters.isEmpty() && otherParameters.get("is.append.contents") != null){
-			isAppend = Boolean.valueOf(otherParameters.get("is.append.contents").trim());
+		if(otherParameters != null && !otherParameters.isEmpty() && otherParameters.get(IS_APPEND_CONTENTS) != null){
+			isAppend = Boolean.valueOf(otherParameters.get(IS_APPEND_CONTENTS).trim());
 		}
 		FileOutputStream fileOutputStream = new FileOutputStream(targetSavingPath, isAppend);
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, encoding);
@@ -167,7 +172,6 @@ public final class FileOperator {
 		bufferedWriter.write(text);
 		bufferedWriter.close();
 	}
-	
 	/**
 	 * 读取ini配置文件的指定项
 	 * 
@@ -185,9 +189,10 @@ public final class FileOperator {
 		for(Entry<Object,Object> entry:property.entrySet()){
 			properties.put(entry.getKey().toString(), entry.getValue().toString());
 		}
+		inputStreamReader.close();
+		fileInputStream.close();
 		return properties;
 	}
-	
 	/**
 	 * 遍历指定拓展名的文件
 	 * 
@@ -203,9 +208,9 @@ public final class FileOperator {
 		if(
 				options != null &&
 				!options.isEmpty() && 
-				options.get("is.contains.directory")!=null && 
-				!"".equals(options.get("is.contains.directory").trim())){
-			isContainsDirectory = Boolean.valueOf(options.get("is.contains.directory"));
+				options.get(IS_CONTAINS_DIRECTORY)!=null && 
+				!"".equals(options.get(IS_CONTAINS_DIRECTORY).trim())){
+			isContainsDirectory = Boolean.valueOf(options.get(IS_CONTAINS_DIRECTORY));
 		}
 		List<String> fileList = new ArrayList<String>();
 		File filePointer = new File(inputFilePath);
@@ -233,7 +238,6 @@ public final class FileOperator {
 		}
 		return fileList;
 	}
-	
 	/**
 	 * 压缩文件(夹)
 	 * @param targetDirectory 压缩操作的目标文件(夹)
@@ -244,7 +248,7 @@ public final class FileOperator {
 	 * @throws IOException 当targetDirectory不存在或outputDirectory下已存在压缩包时
 	 */
 	public static String fileToZip(String targetDirectory, String outputDirectory, Map<String,String>option) throws IOException{
-		String fileSeparator = System.getProperty("file.separator");
+		String fileSeparator = System.getProperty(FILE_SEPARATOR);
 		//======================================================//
 		File filePointer = new File(targetDirectory);
 		if(!filePointer.exists()){
@@ -255,7 +259,7 @@ public final class FileOperator {
 			throw new IOException(zipPointer.getAbsolutePath()+" already existed!");
 		}
 		boolean cutParentPath = false;
-		if(option != null && option.get("cut.parent.path") != null && "true".equals(option.get("cut.parent.path").trim())){
+		if(option != null && option.get(CUT_PARENT_PATH) != null && "true".equals(option.get(CUT_PARENT_PATH).trim())){
 			cutParentPath = true;
 		}
 		//======================================================//
@@ -329,7 +333,6 @@ public final class FileOperator {
 		}
 		return zipPointer.getAbsolutePath();
 	}
-	
 	/**
 	 * 解压缩文件
 	 * @param zipAbsolutePath 压缩包绝对路径
@@ -338,7 +341,7 @@ public final class FileOperator {
 	 * @throws IOException 压缩包的绝对路径不存在或错误，或者目标目录是个已存在的文件时
 	 */
 	public static void zipToFile(String zipAbsolutePath, String targetDirectory, Map<String,String> option) throws IOException{
-		String fileSeparator = System.getProperty("file.separator");
+		String fileSeparator = System.getProperty(FILE_SEPARATOR);
 		//======================================================//
 		File sourcePointer = new File(zipAbsolutePath);
 		if(!sourcePointer.exists()){
@@ -410,5 +413,62 @@ public final class FileOperator {
 			}
 		}
 		zipFile.close();
+	}
+	/**
+	 * 复制文件
+	 * @param from
+	 * @param to
+	 * @throws IOException
+	 */
+	private static void fileCopy(File from, File to) throws IOException{
+		FileInputStream fileInputStream = new FileInputStream(from);
+		FileOutputStream fileOutputStream = new FileOutputStream(to);
+		FileChannel inputChannel = fileInputStream.getChannel();
+		FileChannel outputChannel = fileOutputStream.getChannel();
+		outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+		inputChannel.close();
+		fileInputStream.close();
+		outputChannel.close();
+		fileOutputStream.close();
+	}
+	/**
+	 * 复制文件(夹)
+	 * @param source 源文件(夹), 不存在时抛出异常
+	 * @param destination 目标文件夹,如果是已存在的单个文件则抛出异常
+	 * @throws IOException
+	 */
+	public static void filesCopy(String source, String destination) throws IOException{
+		File from = new File(source);
+		if(!from.exists())
+			throw new NullPointerException("File ["+source+"] is not exist.");
+		File to = new File(destination);
+		if(to.exists() && to.isFile())
+			throw new IllegalArgumentException("File ["+destination+"] is a file.");
+		String relativePath = null;
+		File current = null;
+		File newFilePointer = null;
+		File[] childsOfCurrent = null;
+		List<File> files = new LinkedList<File>();
+		files.add(from);
+		/*
+		 * 注意裁剪相对路径, 如source = C:/Game/MineCraft/, 要注意裁减掉 C:/Game/
+		 * 
+		 * 这样MineCraft目录可以作为相对路径的"根",拼接到destination后边形成新的路径
+		 */
+		while(!files.isEmpty()){
+			current = files.remove(0);
+			/* getParentFile()就是为了保证裁减掉 C:/Game/, 只保留MineCraft目录 */
+			relativePath = current.getAbsolutePath().replace(from.getParentFile().getAbsolutePath(), "");
+			newFilePointer = new File(to.getAbsolutePath() + System.getProperty(FILE_SEPARATOR) + relativePath);
+			if(current.isFile()){
+				fileCopy(current, newFilePointer);
+				continue;
+			}
+			newFilePointer.mkdirs();
+			childsOfCurrent = current.listFiles();
+			Arrays.sort(childsOfCurrent);
+			for(File fPointer : childsOfCurrent)
+				files.add(fPointer);
+		}
 	}
 }

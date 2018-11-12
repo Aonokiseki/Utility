@@ -101,4 +101,30 @@ public class MatrixOperator {
 		}
 		System.out.println(sb.toString());
 	}
+	/**
+	 * 矩阵乘法<br>
+	 * 若左矩阵的列数不等于右矩阵的行数,返回null<br>
+	 * 若矩阵每行的列数不等,返回null
+	 * @param left 左矩阵
+	 * @param right 右矩阵
+	 * @return
+	 */
+	public static double[][] matrixMultiply(double[][] left, double[][] right){
+		for(int i=0; i<left.length; i++)
+			if(left[i].length != right.length)
+				return null;
+		int rightColumnNumber = right[0].length;
+		for(int i=1; i<right.length; i++)
+			if(right[i].length != rightColumnNumber)
+				return null;
+		double[][] result = new double[left.length][rightColumnNumber];
+		for(int i=0; i<result.length; i++){
+			for(int j=0; j<result[i].length; j++){
+				for(int k=0; k<right.length; k++){
+					result[i][j] += left[i][k] * right[k][j];
+				}
+			}
+		}
+		return result;
+	}
 }

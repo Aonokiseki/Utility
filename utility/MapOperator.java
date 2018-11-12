@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import utility.DateOperator.FormatItem;
 
 public final class MapOperator {
 	private MapOperator(){}
@@ -20,6 +19,7 @@ public final class MapOperator {
 	public enum OrderBy{
 		Natural, Number, Calendar, HashCode
 	}
+	
 	/**
 	 * 对Map的Key按照字典顺序做排序
 	 * @param map 原Map
@@ -39,13 +39,13 @@ public final class MapOperator {
 	 * @param map 原Map
 	 * @param orderBy 根据何种方式排序, 可选项 HashCode-哈希|Natural-字典|Number-数值|Calendar-日期<br>
 	 * Number要求所有的value必须是数字,Calendar要求所有的value必须是日期, 若value格式非法, 则不会排序
-	 * @param formatItem 如果按照日历排序,则需在此处指明日期字符串的格式, 另见{@link DateOperator.FormatItem}
+	 * @param formatItem 如果按照日历排序,则需在此处指明日期字符串的格式, 另见{@link TimeFormat}
 	 * @param isDesc 是否降序
 	 * @return 排序后的Map
 	 */
-	public static Map<String, String> sortByValue(Map<String, String> map, OrderBy orderBy, FormatItem formatItem, boolean isDesc){
+	public static Map<String, String> sortByValue(Map<String, String> map, OrderBy orderBy, TimeFormat timeFormat, boolean isDesc){
 		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
-		Collections.sort(list, new EntryComparator(SortItem.Value, orderBy, formatItem, isDesc));
+		Collections.sort(list, new EntryComparator(SortItem.Value, orderBy, timeFormat, isDesc));
 		Map<String, String> newMap = new LinkedHashMap<String, String>();
 		for(int i=0; i<list.size(); i++)
             newMap.put(list.get(i).getKey(), list.get(i).getValue());   
@@ -76,14 +76,14 @@ public final class MapOperator {
 	private static class EntryComparator implements Comparator<Map.Entry<String,String>>{
 		private SortItem sortItem;
 		private OrderBy orderBy;
-		private FormatItem formatItem;
+		private TimeFormat timeFormat;
 		private boolean isDESC;
 		
-		public EntryComparator(SortItem sortItem, OrderBy orderBy, FormatItem formatItem, boolean isDESC){
+		public EntryComparator(SortItem sortItem, OrderBy orderBy, TimeFormat timeFormat, boolean isDESC){
 			this.orderBy = orderBy;
 			this.sortItem = sortItem;
 			this.isDESC = isDESC;
-			this.formatItem = formatItem;
+			this.timeFormat = timeFormat;
 		}
 		@Override
 		public int compare(Entry<String, String> arg0, Entry<String, String> arg1) {
@@ -106,10 +106,10 @@ public final class MapOperator {
 				int result = 0;
 				try{
 					result = compare(
-							DateOperator.stringToCalendar(arg0.getValue(), formatItem), 
-							DateOperator.stringToCalendar(arg1.getValue(), formatItem), 
+							DateOperator.stringToCalendar(arg0.getValue(), timeFormat),
+							DateOperator.stringToCalendar(arg1.getValue(), timeFormat),
 							isDESC);
-				}catch (ParseException | NullPointerException e) {
+				}catch (NullPointerException | ParseException e) {
 					return 0;
 				}
 				return result;

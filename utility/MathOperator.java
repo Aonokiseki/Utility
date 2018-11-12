@@ -2,6 +2,7 @@ package utility;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Vector;
 
@@ -116,6 +117,15 @@ public final class MathOperator {
     		multNumber = multNumber.add(addValue);
     	}
     	return result;
+    }
+    /**
+     * 斯特林公式,阶乘结果的位数
+     * @param n
+     */
+    public static int stirlingApproximation(int n){
+    	if(n <= 2)
+    		return 1;
+    	return (int)Math.floor(Math.log10(2 * Math.PI * n) / 2 + n * Math.log10(n / Math.E)) + 1;
     }
     
     /**
@@ -285,5 +295,69 @@ public final class MathOperator {
     			break;
     	}
     	return primes;
+    }
+    /**
+     * 调和级数前n项和
+     * @param n 第n项
+     * @return 调和级数的前n项和
+     */
+    public static double sumOfHarmoric(int n){
+    	double sum = 0.0;
+    	for(int i=1; i<=n; i++){
+    		sum += 1.0 / i;
+    	}
+    	return sum;
+    }
+    /**
+     * 交错调和级数前n项和
+     * @param n 第n项
+     * @return 前n项和
+     */
+    public static double sumOfAlternatingHarmonic(int n){
+    	double sum = 0.0;
+    	for(int i=1; i<=n; i++){
+    		sum += Math.pow(-1, i+1) * (1.0 / i);
+    	}
+    	return sum;
+    }
+    /**
+     * 等差数列前n项和
+     * @param initial 首项
+     * @param difference 公差
+     * @param count 项数
+     * @return 前n项和
+     */
+    public static long sumOfArithmeticProgression(int initial, int difference, int count){
+    	if(count <= 1)
+    		return initial;
+    	return count * initial + (count * (count - 1) / 2) * difference;
+    }
+    /**
+     * 等差数列前n项和
+     * @param initial 首项
+     * @param last 末项
+     * @param count 项数
+     * @return
+     */
+    public static long sumOfArithmeticProgressionWithLast(int initial, int last, int count){
+    	if(count <= 1)
+    		return initial;
+    	return (initial + last) * count / 2;
+    }
+    /**
+     * 等比数列前n项和
+     * @param initial 首项,为0时直接返回首项
+     * @param ratio 公比,为0时直接返回首项
+     * @param count 项数,小于1时直接返回首项
+     * @return 前n项和
+     */
+    public static double sumOfGeometricProgression(int initial, int ratio, int count){
+    	if(initial == 0 || count < 1 || ratio == 0)
+    		return initial;
+    	if(count == 1)
+    		return initial;
+    	if(ratio == 1)
+    		return initial * count;
+    	return initial * (1 - Math.pow(ratio, count)) / (1 - ratio);
     }
 }

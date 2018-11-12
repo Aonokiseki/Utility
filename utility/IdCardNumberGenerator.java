@@ -50,6 +50,7 @@ public class IdCardNumberGenerator {
 	public String toString(){
 		return this.areaCode+this.birthday+this.orderCode+this.checkCode;
 	}
+	
 	/*
 	 * 构造器私有,不允许直接实例化
 	 */
@@ -76,7 +77,7 @@ public class IdCardNumberGenerator {
 		/*
 		 * 出生日期部分,在两个日期间随机取值, 起始日期限制在1900年1月1日,终止日期永远以今天为准
 		 */
-		birthday = DateOperator.getRandomDateTime("19000101", DateOperator.getDate(null, null, 0, DateOperator.FormatItem.idcard), DateOperator.FormatItem.idcard);
+		birthday = DateOperator.getRandomDateTime("19000101", DateOperator.getDate(null, null, 0, TimeFormat.YYYYMMDD), TimeFormat.YYYYMMDD);
 		/* 
 		 * 这里不要直接用String.valueOf((int)(Math.random()*1000));
 		 * 
@@ -158,8 +159,9 @@ public class IdCardNumberGenerator {
 	 * 
 	 * @param idCardNumber 待测身份证号
 	 * @return 判断结果
+	 * @throws ParseException 
 	 */
-	public static boolean isALegalIdCardNumber(String idCardNumber){
+	public static boolean isALegalIdCardNumber(String idCardNumber) throws ParseException{
 		if(idCardNumber == null || idCardNumber.isEmpty() || "".equals(idCardNumber.trim())){
 			return false;
 		}
@@ -172,11 +174,7 @@ public class IdCardNumberGenerator {
 		if(!areaMap.containsKey(idCardNumber.substring(0, 6))){
 			return false;
 		}
-		try{
-			DateOperator.stringToDate(idCardNumber.substring(6,14), DateOperator.FormatItem.idcard);
-		}catch(ParseException e){
-			return false;
-		}
+		DateOperator.stringToDate(idCardNumber.substring(6,14), TimeFormat.YYYYMMDD);
 		int[] weightArray = new int[]{7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2};
 		int[] idCardNumberArray = stringToIntArray(idCardNumber.substring(0, idCardNumber.length()-1));
 		int sum = 0;
