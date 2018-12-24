@@ -119,6 +119,28 @@ public final class MathOperator {
     	return result;
     }
     /**
+     * 组合数
+     * @param n
+     * @param m
+     * @return
+     */
+    public static BigDecimal C(int n, int m){
+       if(n <= m)
+    	   return new BigDecimal("1");
+ 	   return factorial(n).divide(factorial(m).multiply(factorial(n-m)), BigDecimal.ROUND_FLOOR);
+    }
+    /**
+     * 排列数
+     * @param n
+     * @param m
+     * @return
+     */
+    public static BigDecimal A(int n, int m){
+    	if(n <= m)
+    		return new BigDecimal("1");
+    	return factorial(n).divide(factorial(n-m), BigDecimal.ROUND_FLOOR);
+    }
+    /**
      * 斯特林公式,阶乘结果的位数
      * @param n
      */
@@ -129,7 +151,7 @@ public final class MathOperator {
     }
     
     /**
-     * 两个向量之间的闵可夫斯基距离. <br>元素类型必须为Number类的子类,两个向量的长度必须相等.
+     * 两个向量(终点)之间的闵可夫斯基距离. <br>元素类型必须为Number类的子类,两个向量的长度必须相等.
      * 
      * @param vector1 向量1
      * @param vector2 向量2
@@ -360,4 +382,142 @@ public final class MathOperator {
     		return initial * count;
     	return initial * (1 - Math.pow(ratio, count)) / (1 - ratio);
     }
+    
+    private final static double PRECISE_STANDARD = 1e-15;
+    /**
+     * 牛顿迭代法求开根号
+     * @param n 被开根号的数
+     * @return 正根植
+     */
+    public static double sqrt(double n){
+    	if(n < 0)
+    		return Double.MIN_VALUE;
+    	/*
+    	 * 求n的m次根本质上是在求 f(x) = x^m - n，然后令f(x)=0 
+    	 * 
+    	 * 设f(x)在某区间内m阶可导, 根据泰勒公式, f(x) ~ f(x0) + f`(x0)(x - x0) + O(f``````````(x))
+    	 * 
+    	 * 取前两项构成一个新函数φ(x) = f(x0) + f'(x0)(x - x0)
+    	 * 
+    	 * 令φ(x) = 0, 则有 0 = f(x0) + f`(x0)(x - x0),  反解x = x0 - f(x0)/f`(x0)
+    	 * 
+    	 * 初始的x0是一个猜测值,不一定就是最终的解,也许距离真正的解很远,如果没有满足进度要求,就按照反解出来的x反复迭代
+    	 * 
+    	 * 如f(x) = x^2 - n
+    	 * 
+    	 * f(x) ~ (x0^2 - n) + 2*(x - x0) + 2
+    	 * 
+    	 * 令φ(x) = (x0^2 - n) + 2*x0*(x - x0)  = 0
+    	 * 
+    	 * 则有 x0^2 - n + 2*x0*x - x0^2 = 0
+    	 * 
+    	 * 整理后 x = (x0 + n/x0) / 2
+    	 * 
+    	 * 每次迭代, 将上一轮得出的x视为新一轮迭代的x0,求出新一轮迭代的x, 反复
+    	 */
+    	double x1 = n;
+    	double x2 = n/2;
+    	while(Math.abs(x1 - x2) > PRECISE_STANDARD){
+    		x1 = x2;
+    		x2 = (x1 + n/x1) / 2;
+    	}
+    	return x1;
+    }
+    /**
+     * 返回斐波那契数列前n项构成的表
+     * @param n 
+     * @return
+     */
+    public static List<BigDecimal> fibonacciList(int n){
+    	List<BigDecimal> result = new ArrayList<BigDecimal>();
+    	if(n <= 0)
+    		return result;
+    	result.add(0,new BigDecimal(1));
+    	if(n == 1)
+    		return result;
+    	result.add(1,new BigDecimal(1));
+    	if(n == 2)
+    		return result;
+    	for(int i=2; i<n; i++)
+    		result.add(i, result.get(i-1).add(result.get(i-2)));
+    	return result;
+    }
+   /*泰勒公式用的迭代次数, 1024 * 1024 * 8 = 8388608, 方便快速平方算法*/
+   private final static int ITERATIONS = 8388608;
+   /**
+    * ln(x + 1)
+    * @param x
+    * @return
+    */
+   public static double naturalLogarithmAddOne(double x){
+	   if(x <= -1.0 || x > 1.0)
+		   return Double.NaN;
+	   double result = 0.0;
+	   double constParameter = 1.0;
+	   for(int i=1; i<=ITERATIONS; i++){
+		   if(i % 2 == 1)
+			   constParameter = 1.0;
+		   else
+			   constParameter = -1.0;
+		   result += constParameter/i * Math.pow(x, i);
+	   }
+	   return result;
+   }
+   /**
+    * 两个向量的内积
+    * @param v1
+    * @param v2
+    * @return
+    */
+   public static double innerProduct(Vector<Double> v1, Vector<Double>v2){
+	   if(v1 == null || v1.isEmpty() || v2 == null || v2.isEmpty() || v1.size() != v2.size())
+		   return Double.NaN;
+	   double result = 0.0;
+	   for(int i=0, size=v1.size(); i<size; i++){
+		   result += v1.get(i) * v2.get(i);
+	   }
+	   return result;
+   }
+   /**
+    * 向量加法
+    * @param v1
+    * @param v2
+    * @return
+    */
+   public static Vector<Double> vectorAdd(Vector<Double> v1, Vector<Double> v2){
+	   if(v1 == null || v1.isEmpty() || v2 == null || v2.isEmpty() || v1.size() != v2.size())
+		   return null;
+	   Vector<Double> result = new Vector<Double>();
+	   for(int i=0,size=v1.size(); i<size; i++)
+		   result.add(i, v1.get(i) + v2.get(i));
+	   return result;
+   }
+   /**
+    * 向量减法
+    * @param v1
+    * @param v2
+    * @return
+    */
+   public static Vector<Double> vectorMinus(Vector<Double> v1, Vector<Double> v2){
+	   if(v1 == null || v1.isEmpty() || v2 == null || v2.isEmpty() || v1.size() != v2.size())
+		   return null;
+	   Vector<Double> result = new Vector<Double>();
+	   for(int i=0,size=v1.size(); i<size; i++)
+		   result.add(i, v1.get(i) - v2.get(i));
+	   return result;
+   }
+   /**
+    * 向量数乘
+    * @param constant 常数
+    * @param v 向量
+    * @return
+    */
+   public static Vector<Double> vectorMultiplyingConstant(double constant, Vector<Double> v){
+	   if(v == null || v.isEmpty())
+		   return null;
+	   Vector<Double> result = new Vector<Double>();
+	   for(int i=0,size=v.size(); i<size; i++)
+		   result.add(i, v.get(i) * constant);
+	   return result;
+	}
 }

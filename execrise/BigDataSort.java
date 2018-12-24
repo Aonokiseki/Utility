@@ -23,8 +23,8 @@ public class BigDataSort {
 	private final static String LS = System.lineSeparator();
 	private final static String FS = System.getProperty("file.separator");
 	
-	private List<String> srcFiles;
-	private List<String> filesAfterPartition;
+	private List<File> srcFiles;
+	private List<File> filesAfterPartition;
 	
 	public BigDataSort(){
 		File fPointer = new File(FILES_AFTER_PARTITION_DIRECTORY);
@@ -60,8 +60,8 @@ public class BigDataSort {
 	 * @param filePath
 	 * @throws IOException
 	 */
-	private void partitionOnEachFile(String filePath) throws IOException{
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), ENCODING));
+	private void partitionOnEachFile(File file) throws IOException{
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), ENCODING));
 		List<BufferedWriter> bufferedWriters = new ArrayList<BufferedWriter>(FILE_COUNT);
 		for(int i=0; i<FILE_COUNT; i++){
 			bufferedWriters.add(i, new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FILES_AFTER_PARTITION_DIRECTORY +FS+ "filesAfterPartition_"+i+".txt", true), ENCODING)));
@@ -95,8 +95,8 @@ public class BigDataSort {
 	 * @param filePath
 	 * @throws IOException
 	 */
-	private void localSortOnEachFile(String filePath) throws IOException{
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), ENCODING));
+	private void localSortOnEachFile(File file) throws IOException{
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), ENCODING));
 		List<Double> numbers = new ArrayList<Double>();
 		double currentLineNumber = 0.0;
 		String currentLine;
@@ -110,7 +110,7 @@ public class BigDataSort {
 		for(int i=0,size=numbers.size(); i<size; i++){
 			sb.append(numbers.get(i)+LS);
 		}
-		FileOperator.write(filePath, sb.toString());
+		FileOperator.write(file.getAbsolutePath(), sb.toString());
 	}
 	/**
 	 * 归并<br>
@@ -156,7 +156,7 @@ public class BigDataSort {
 		return indexOfMin;
 	}
 	
-	private void clear(List<String> filesAfterPartition){
+	private void clear(List<File> filesAfterPartition){
 		File fPointer = null;
 		System.gc();
 		try {
@@ -165,7 +165,7 @@ public class BigDataSort {
 			e.printStackTrace();
 		}
 		for(int i=0, size=filesAfterPartition.size(); i<size; i++){
-			fPointer = new File(filesAfterPartition.get(i));
+			fPointer = filesAfterPartition.get(i);
 			System.out.println(fPointer.delete());
 		}
 	}

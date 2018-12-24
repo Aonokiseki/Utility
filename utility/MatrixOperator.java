@@ -19,7 +19,7 @@ public class MatrixOperator {
 	}
 	
 	private static double innerDeterminant(double[][] matrix){
-		printMatrix(matrix);
+		print(matrix);
 		double result = 1;
 		double [] temp = null;
 		double ratio = 0;
@@ -27,7 +27,7 @@ public class MatrixOperator {
 			if(matrix[i][i] == 0){
 				System.out.println("Because matrix["+i+"]["+i+"] == 0");
 				matrix = changeDeterminantNoZero(matrix, i, i);
-				printMatrix(matrix);
+				print(matrix);
 				result *= -1;
 			}
 			for(int j=0; j<i; j++){
@@ -46,7 +46,7 @@ public class MatrixOperator {
 				ratio = -(matrix[i][j]/matrix[j][j]);
 				System.out.println("-matrix["+i+"]["+j+"]/matrix["+j+"]["+j+"] == -("+matrix[i][j]+"/"+matrix[j][j]+") == "+ratio);
 				matrix[i] = addValue(matrix[i],matrix[j],ratio);
-				printMatrix(matrix);
+				print(matrix);
 			}
 		}
 		DecimalFormat df = new DecimalFormat(".##");  
@@ -86,8 +86,11 @@ public class MatrixOperator {
 		}
 		return matrix;
 	}
-	
-	private static void printMatrix(double[][] matrix){
+	/**
+	 * 打印矩阵
+	 * @param matrix
+	 */
+	public static void print(double[][] matrix){
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<matrix.length; i++){
 			sb.append("|");
@@ -109,7 +112,7 @@ public class MatrixOperator {
 	 * @param right 右矩阵
 	 * @return
 	 */
-	public static double[][] matrixMultiply(double[][] left, double[][] right){
+	public static double[][] multiply(double[][] left, double[][] right){
 		for(int i=0; i<left.length; i++)
 			if(left[i].length != right.length)
 				return null;
@@ -117,7 +120,10 @@ public class MatrixOperator {
 		for(int i=1; i<right.length; i++)
 			if(right[i].length != rightColumnNumber)
 				return null;
-		double[][] result = new double[left.length][rightColumnNumber];
+		return innerMultiply(left, right);
+	}
+	private static double[][] innerMultiply(double[][] left, double[][] right){
+		double[][] result = new double[left.length][right[0].length];
 		for(int i=0; i<result.length; i++){
 			for(int j=0; j<result[i].length; j++){
 				for(int k=0; k<right.length; k++){
@@ -126,5 +132,25 @@ public class MatrixOperator {
 			}
 		}
 		return result;
+	}
+	/**
+	 * 方阵的n次幂<br>
+	 * 由于采用double存储值, n超过800会溢出, 因此n大于800时直接返回null
+	 * @param array 必须方阵, 否则返回null
+	 * @param n
+	 * @return
+	 */
+	public static double[][] pow(double[][] array, int n){
+		if(n > 800)
+			return null;
+		for(int i=0; i<array.length; i++){
+			if(array[i].length != array.length)
+				return null;
+		}
+		double[][] temp = array;
+		for(int i=0; i<n-1; i++){
+			temp = innerMultiply(array, temp);
+		}
+		return temp;
 	}
 }

@@ -200,23 +200,17 @@ public final class FileOperator {
 	 * @param suffix 目标拓展名,为空则输出所有文件
 	 * @param options 选项<br>
 	 *         <code>is.contains.directory</code> - 遍历时保存文件夹路径, 默认false, 即不保存
-	 * @return <code>List&ltString&gt</code> 每个目标文件的绝对路径组成的表
+	 * @return <code>List&ltFile&gt</code> 每个目标文件指针组成的表
 	 * @throws IOException 当搜索起点不存在时
 	 */
-	public static List<String> traversal(String inputFilePath, String suffix, Map<String,String>options) throws IOException{
-		boolean isContainsDirectory = false;
-		if(
-				options != null &&
-				!options.isEmpty() && 
-				options.get(IS_CONTAINS_DIRECTORY)!=null && 
-				!"".equals(options.get(IS_CONTAINS_DIRECTORY).trim())){
-			isContainsDirectory = Boolean.valueOf(options.get(IS_CONTAINS_DIRECTORY));
-		}
-		List<String> fileList = new ArrayList<String>();
+	public static List<File> traversal(String inputFilePath, String suffix, Map<String,String>options) throws IOException{
 		File filePointer = new File(inputFilePath);
-		if(!filePointer.exists()){
+		if(!filePointer.exists())
 			throw new IOException(inputFilePath + " is not exist! Please check your path.");
-		}
+		boolean isContainsDirectory = false;
+		if(MapOperator.mapHasNonNullValue(options, IS_CONTAINS_DIRECTORY))
+			isContainsDirectory = Boolean.valueOf(options.get(IS_CONTAINS_DIRECTORY));
+		List<File> files = new ArrayList<File>();
 		List<File> fileQueue = new LinkedList<File>();
 		fileQueue.add(filePointer);
 		File currentFile = null;
@@ -225,18 +219,16 @@ public final class FileOperator {
 			currentFile = fileQueue.remove(0);
 			if(currentFile.isFile()){
 				if(suffix == null || currentFile.getName().endsWith(suffix))
-					fileList.add(currentFile.getAbsolutePath());
+					files.add(currentFile);
 			}else{
 				childsOfFile = currentFile.listFiles();
-				if(isContainsDirectory){
-					fileList.add(currentFile.getAbsolutePath());
-				}
-				for(File f:childsOfFile){
+				if(isContainsDirectory)
+					files.add(currentFile);
+				for(File f:childsOfFile)
 					fileQueue.add(f);
-				}
 			}
 		}
-		return fileList;
+		return files;
 	}
 	/**
 	 * 压缩文件(夹)
