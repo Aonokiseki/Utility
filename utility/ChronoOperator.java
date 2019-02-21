@@ -14,11 +14,6 @@ public class ChronoOperator {
 	private final static String DEFAULT_LOCALDATETIME_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS";
 	private final static String DEFAULT_LOCALDATE_FORMAT = "yyyy/MM/dd";
 	private final static String DEFAULT_LOCALTIME_FORMAT = "HH:mm:ss";
-	public static void main(String[] args){
-		LocalDateTime ldt = stringToLocalDateTime("2018/10/22 09:33:23.344", null);
-		ldt = ldt.plusDays(1);
-		System.out.println(ldt);
-	}
 	/**
 	 * 返回指定范围内一个随机的LocalDateTme对象
 	 * @param time1 LocalDateTime的实例化对象
@@ -32,21 +27,6 @@ public class ChronoOperator {
 		Random random = new Random();
 		long timeFix = (long)(random.nextDouble() * Duration.between(lower, higher).toNanos());
 		LocalDateTime result = lower.plusNanos(timeFix);
-		return result;
-	}
-	/**
-	 * 返回指定范围内一个随机的LocalDate对象
-	 * @param date1 
-	 * @param date2 
-	 * @return <code>LocalDate<code>的实例化对象,时间在date1和date2之间
-	 */
-	public static LocalDate getARandomLocalDate(LocalDate date1, LocalDate date2){
-		LocalDate lower = date1;
-		LocalDate higher = date2;
-		if(date1.isAfter(date2)){ lower = date2; higher = date1;}
-		Random random = new Random();
-		long dateFix = (long)(random.nextDouble() * Duration.between(lower, higher).toDays());
-		LocalDate result = lower.plusDays(dateFix);
 		return result;
 	}
 	/**

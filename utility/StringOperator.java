@@ -1,7 +1,14 @@
 package utility;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -433,5 +440,29 @@ public final class StringOperator {
     	ipPart[3] = (int)((ipNumber & 0xff));
     	sb.append(ipPart[0]+"."+ipPart[1]+"."+ipPart[2]+"."+ipPart[3]);
     	return sb.toString();
+    }
+    
+    private final static String CONTAINS_SPACE_LINE = "contains.space.line";
+    /**
+     * 将一串文本按行读取, 然后将每一行文本当做列表的每一行, 最后返回列表
+     * @param str 源文本
+     * @param param 可选参数<br>
+     * <b><code>contains.space.line</code></b> 是否保留空行 true-是|false-否, 默认false
+     * @return <code>&ltList&gt</code> 文本列表
+     * @throws IOException 读取文本串发生错误时
+     */
+    public static List<String> getStringAsLines(String str, Map<String,String> param)throws IOException{
+    	List<String> result = new ArrayList<String>();
+    	if(str == null || str.isEmpty())
+    		return result;
+    	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8")));
+    	String current;
+    	while((current = bufferedReader.readLine())!=null){
+    		if(param.containsKey(CONTAINS_SPACE_LINE) && Boolean.valueOf(param.get(CONTAINS_SPACE_LINE)).booleanValue() == true && current.isEmpty())
+    			continue;
+    		result.add(current.trim());
+    	}
+    	bufferedReader.close();
+    	return result;
     }
 }
