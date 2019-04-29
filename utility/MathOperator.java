@@ -2,35 +2,40 @@ package utility;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.List;
-import java.util.Vector;
 
 public final class MathOperator {
 	private MathOperator(){}
 	/**
-	 * 求一个向量(或一组数)的期望和方差
-	 * 
-	 * @param vector 向量
-	 * @return double[] double[0]是期望, double[1]是方差
+	 * 统计<code>List</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code><br/>
+	 * 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
+	 * 并通过四元组<code>FourTuple&ltA,B,C,D&gt</code>返回
+	 * @param vector 
+	 * @return
 	 */
-	public static <T extends Number> Double[] getVariance(Vector<T> vector){
-		Double[] result = new Double[2];
-		result[0] = new Double(0.0);
-		result[1] = new Double(0.0);
-		double theSquareOfTheExpectation = 0.0;
-		double theExpectationOfTheSquare = 0.0;
-		double sumOfEachItem = 0.0;
-		double sumOfSquareOfEachItem = 0.0;
-		int length=vector.size();
+	public static FourTuple<Double, Double, Double, Double> statistics(List<Double> vector){
+		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
+		double expectation = 0.0; double variance = 0.0;
+		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
+		double sumOfEachItem = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
+		int length = vector.size();
 		for(int i=0; i<length; i++){
+			current = vector.get(i);
+			if(current > maxValue)
+				maxValue = current;
+			if(current < minValue)
+				minValue = current;
 			sumOfEachItem+=vector.get(i).doubleValue();
 			sumOfSquareOfEachItem+=Math.pow(vector.get(i).doubleValue(), 2.0);
 		}
-		result[0] = sumOfEachItem / length;
+		expectation = sumOfEachItem / length;
 		theSquareOfTheExpectation = Math.pow((sumOfEachItem/length),2.0);
 		theExpectationOfTheSquare = sumOfSquareOfEachItem/length;
-		result[1] = theExpectationOfTheSquare - theSquareOfTheExpectation;
+		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
+		FourTuple<Double, Double, Double, Double> result = new FourTuple<Double, Double, Double,Double>(maxValue, minValue, expectation, variance);
 		return result;
 	}
 	
@@ -50,18 +55,6 @@ public final class MathOperator {
     	}
     	return result;
     }
-    
-    public static <T extends Number> double[] findMaxAndMin(List<T> list){
-    	double[] result = new double[]{Double.MAX_VALUE, Double.MIN_VALUE};
-    	for(int i=0, size=list.size(); i<size; i++){
-    		if(list.get(i).doubleValue() < result[0])
-    			result[0] = list.get(i).doubleValue();
-    		if(list.get(i).doubleValue() > result[1])
-    			result[1] = list.get(i).doubleValue();
-    	}
-    	return result;
-    }
-    
     /**
      * 0-1标准化
      * 
@@ -158,7 +151,7 @@ public final class MathOperator {
      * @param dimension 维度, dimension不小于1. <br>1为曼哈顿距离;2为欧几里得距离;数字越大越接近切比雪夫距离
      * @return Double 距离
      */
-    public static <T extends Number> Double minkowskiDistance(Vector<T> vector1, Vector<T> vector2, int dimension){
+    public static <T extends Number> Double minkowskiDistance(List<T> vector1, List<T> vector2, int dimension){
     	if(vector1.size() != vector2.size()){
     		throw new IllegalArgumentException("One vector's size don't equal the other's");
     	}
@@ -174,24 +167,13 @@ public final class MathOperator {
     }
     
     /**
-     * 两个点的平面距离
-     */
-    public static double distance2D(int x1, int y1, int x2, int y2){
-    	Vector<Integer> vector1 = new Vector<Integer>();
-    	vector1.add(x1); vector1.add(y1);
-    	Vector<Integer> vector2 = new Vector<Integer>();
-    	vector2.add(x2); vector2.add(y2);
-    	return minkowskiDistance(vector1, vector2, 2).doubleValue();
-    }
-    
-    /**
      * 求两个向量之间的余弦值,两个向量的长度必须相等
      * 
      * @param vector1
      * @param vector2
      * @return Double 余弦值
      */
-    public static <T extends Number> Double cosine(Vector<T> vector1, Vector<T> vector2){
+    public static <T extends Number> Double cosine(List<T> vector1, List<T> vector2){
     	if(vector1.size() != vector2.size()){
     		throw new IllegalArgumentException("One vector's size don't equal the other's");
     	}
@@ -465,59 +447,77 @@ public final class MathOperator {
    }
    /**
     * 两个向量的内积
-    * @param v1
-    * @param v2
+    * @param vector1
+    * @param vector2
     * @return
     */
-   public static double innerProduct(Vector<Double> v1, Vector<Double>v2){
-	   if(v1 == null || v1.isEmpty() || v2 == null || v2.isEmpty() || v1.size() != v2.size())
+   public static double innerProduct(List<Double> vector1, List<Double>vector2){
+	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return Double.NaN;
 	   double result = 0.0;
-	   for(int i=0, size=v1.size(); i<size; i++){
-		   result += v1.get(i) * v2.get(i);
+	   for(int i=0, size=vector1.size(); i<size; i++){
+		   result += vector1.get(i) * vector2.get(i);
 	   }
 	   return result;
    }
    /**
     * 向量加法
-    * @param v1
-    * @param v2
+    * @param vector1
+    * @param vector2
     * @return
     */
-   public static Vector<Double> vectorAdd(Vector<Double> v1, Vector<Double> v2){
-	   if(v1 == null || v1.isEmpty() || v2 == null || v2.isEmpty() || v1.size() != v2.size())
+   public static List<Double> vectorAdd(List<Double> vector1, List<Double> vector2){
+	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return null;
-	   Vector<Double> result = new Vector<Double>();
-	   for(int i=0,size=v1.size(); i<size; i++)
-		   result.add(i, v1.get(i) + v2.get(i));
+	   List<Double> result = new ArrayList<Double>();
+	   for(int i=0,size=vector1.size(); i<size; i++)
+		   result.add(i, vector1.get(i) + vector2.get(i));
 	   return result;
    }
    /**
     * 向量减法
-    * @param v1
-    * @param v2
+    * @param vector1
+    * @param vector2
     * @return
     */
-   public static Vector<Double> vectorMinus(Vector<Double> v1, Vector<Double> v2){
-	   if(v1 == null || v1.isEmpty() || v2 == null || v2.isEmpty() || v1.size() != v2.size())
+   public static List<Double> vectorMinus(List<Double> vector1, List<Double> vector2){
+	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return null;
-	   Vector<Double> result = new Vector<Double>();
-	   for(int i=0,size=v1.size(); i<size; i++)
-		   result.add(i, v1.get(i) - v2.get(i));
+	   List<Double> result = new ArrayList<Double>();
+	   for(int i=0,size=vector1.size(); i<size; i++)
+		   result.add(i, vector1.get(i) - vector2.get(i));
 	   return result;
    }
    /**
     * 向量数乘
     * @param constant 常数
-    * @param v 向量
+    * @param vector 向量
     * @return
     */
-   public static Vector<Double> vectorMultiplyingConstant(double constant, Vector<Double> v){
-	   if(v == null || v.isEmpty())
+   public static List<Double> vectorMultiplyingConstant(double constant, List<Double> vector){
+	   if(vector == null || vector.isEmpty())
 		   return null;
-	   Vector<Double> result = new Vector<Double>();
-	   for(int i=0,size=v.size(); i<size; i++)
-		   result.add(i, v.get(i) * constant);
+	   List<Double> result = new ArrayList<Double>();
+	   for(int i=0,size=vector.size(); i<size; i++)
+		   result.add(i, vector.get(i) * constant);
 	   return result;
 	}
+   
+   /**
+    * 对<code>&ltlist&gt</code>按value做次数统计
+    * @param list
+    * @return <code>Map&ltT key, Long value&gt</code> 其中key表示list中的值, value表示list中出现的次数
+    */
+   public static <T> Map<T,Long> category(List<T> list){
+   	Map<T, Long> result = new HashMap<T, Long>();
+   	T currentKey = null;
+   	for(int i=0,size=list.size(); i<size; i++){
+   		currentKey = list.get(i);
+   		if(result.containsKey(currentKey))
+   			result.put(currentKey, result.get(currentKey)+1);
+   		else
+   			result.put(currentKey, 1L);
+   	}
+   	return result;
+   }
 }

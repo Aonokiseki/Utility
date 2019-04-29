@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,6 +98,33 @@ public final class StringOperator {
 		new int[]{-770113536, -768606209},
 		new int[]{-569376768, -564133889}
 	};
+	
+	private static final String[] UPPER_LETTER_SET = new String[]{
+		"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"
+	};
+	private static final String[] LOWER_LETTER_SET = new String[]{
+		"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
+	};
+	private static final String[] LETTER_SET = new String[]{
+		"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+		"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
+	};
+	private static final String[] NUMBER_SET = new String[]{
+		"0","1","2","3","4","5","6","7","8","9"
+	};
+	private static final String[] NUMBER_AND_UPPER_LETTER_SET = new String[]{
+		"0","1","2","3","4","5","6","7","8","9",
+		"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"
+	};
+	private static final String[] NUMBER_AND_LOWER_LETTER_SET = new String[]{
+		"0","1","2","3","4","5","6","7","8","9",
+		"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
+	};
+	private static final String[] MIXED_CHARACTER_SET = new String[]{
+		"0","1","2","3","4","5","6","7","8","9",
+		"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+		"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
+	};
 	/**
 	 * 判断文本是否非空
 	 * 
@@ -105,9 +133,8 @@ public final class StringOperator {
 	 */
 	public static boolean isNotEmpty(String text){  
         boolean result = false;
-        if((text != null) && (!"".equals(text))){
+        if((text != null) && (!"".equals(text)))
         	result = true;
-        }
         return result;
     }
 	/** 
@@ -122,66 +149,15 @@ public final class StringOperator {
         Matcher regexMatcher = p.matcher(input);  
         return regexMatcher.find();  
     }
-	/** 
-     * 是否URL地址 
-     *  
-     * @param url URL 
-     * @return boolean true-是 false-否 
-     */  
-    public static boolean isUrl(String url)  {  
-        return validByRegex("(http://|https://)?([\\w-]+\\.)+[\\w-]+(/[\\w- ./?%&=]*)?", url);  
-    }
-    /** 
-     * 是否为整数字符串 
-     *  
-     * @param string 字符串 
-     * @return boolean true-是 false-否 
-     */  
-    public static boolean isInteger(String string){  
-        boolean result = validByRegex("^[-+]{0,1}\\d*$", string);  
-        return result;  
-    }  
-    /** 
-     * 是否为邮政编码 
-     *  
-     * @param code 字符串 
-     * @return boolean true-是 false-否 
-     */  
-    public static boolean isZipCode(String code){  
-        boolean result = validByRegex("^[0-9]{6}$", code);  
-        return result;  
-    }
     
-    /** 
-     * 是否符合电子邮件地址格式 
-     *  
-     * @param email 电子邮件地址 
-     * @return boolean true-是 false-否 
-     */  
-    public static boolean isEmail(String email){  
-        boolean isEmail = false;  
-        Pattern p = Pattern.compile("([\\w[.-]]+)(@)([\\w[.-]]+\\.[\\w[.-]]+)");  
-        Matcher m = p.matcher(email);  
-        if (m.matches()){  
-            isEmail = true;  
-        }  
-        return isEmail;  
-    }
-    /** 
-     * 是否符合手机号码格式 
-     *  
-     * @param mobile 手机号码 
-     * @return boolean true-是 false-否 
-     */  
-    public static boolean isMobile(String mobile){  
-        boolean isMobile = false;  
-        Pattern p = Pattern.compile("((\\()?(\\+)?(86)?1[3|5|8][0-9]{9}(\\))?$)|((\\()?(\\+)?(86)?01[3|5|8][0-9]{9}(\\))?$)");  
-        Matcher m = p.matcher(mobile);  
-        if (m.matches()){  
-            isMobile = true;  
-        }  
-        return isMobile;  
-    }
+    /*一些常用的正则表达式*/
+    public final static String REGEX_URL = "(http://|https://)?([\\w-]+\\.)+[\\w-]+(/[\\w- ./?%&=]*)?";
+    public final static String REGEX_INTEGER = "^[-+]{0,1}\\d*$";
+    public final static String REGEX_ZIPCODE = "^[0-9]{6}$";
+    public final static String REGEX_EMAIL = "([\\w[.-]]+)(@)([\\w[.-]]+\\.[\\w[.-]]+)";
+    public final static String REGEX_MOBILE = "((\\()?(\\+)?(86)?1[3|5|8][0-9]{9}(\\))?$)|((\\()?(\\+)?(86)?01[3|5|8][0-9]{9}(\\))?$)";
+    public final static String REGEX_PASSWD = "([A-Za-z0-9_]{4,16})";
+  
     /** 
      * 是否为数字 
      *  
@@ -190,15 +166,13 @@ public final class StringOperator {
      * @throws Exception text为Null或空串时, 抛出异常
      */  
     public static boolean isNumber(String text){  
-        if (!isNotEmpty(text)){  
+        if (!isNotEmpty(text))
             throw new NullPointerException("Text is Null Or Empty");  
-        }
         String numberStr = "0123456789";  
         for (int i = 0; i < text.length(); i++){  
             char c = text.charAt(i);  
-            if (numberStr.indexOf(String.valueOf(c)) == -1)  {  
+            if (numberStr.indexOf(String.valueOf(c)) == -1)
                 return false;  
-            }  
         }  
         return true;  
     }
@@ -214,26 +188,10 @@ public final class StringOperator {
         int index = phone.indexOf("-");  
         if (index > 0 && index != phone.length() - 1){  
             String phoneNum = phone.substring(0, index) + phone.substring(index + 1);  
-            if (isNumber(phoneNum)){  
+            if (isNumber(phoneNum))
                 isPhone = true;  
-            }  
         }  
         return isPhone;  
-    }  
-    /** 
-     * 是否为密码，允许大小写字母、数字以及下划线，长度为4-16位 
-     *  
-     * @param pwd 密码 
-     * @return boolean true-是 false-否 
-     */  
-    public static boolean isPassword(String pwd){  
-        boolean ifPwd = false;  
-        Pattern p = Pattern.compile("([A-Za-z0-9_]{4,16})");  
-        Matcher m = p.matcher(pwd);  
-        if (m.matches()){  
-            ifPwd = true;  
-        }  
-        return ifPwd;  
     }
     /** 
      * 转换为大写,只对其中的英文字母有效 
@@ -351,25 +309,26 @@ public final class StringOperator {
      */
     public static String getRandomString(int length, CharacterType characterType, LetterType letterType){
     	length = Math.abs(length);
-    	String characterSet = "";
+    	String[] characterSet = null;
     	StringBuilder stringBuilder = new StringBuilder();
     	if(characterType == CharacterType.Mixed && letterType == LetterType.Mixed){
-    		characterSet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    		characterSet = StringOperator.MIXED_CHARACTER_SET;
     	}else if(characterType == CharacterType.English && letterType == LetterType.Mixed){
-    		characterSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    		characterSet = StringOperator.LETTER_SET;
     	}else if(characterType == CharacterType.Number){
-    		characterSet = "0123456789";
+    		characterSet = StringOperator.NUMBER_SET;
     	}else if(characterType == CharacterType.Mixed && letterType == LetterType.Lower){
-    		characterSet = "abcdefghijklmnopqrstuvwxyz0123456789";
+    		characterSet = StringOperator.NUMBER_AND_LOWER_LETTER_SET;
     	}else if(characterType == CharacterType.Mixed && letterType == LetterType.Upper){
-    		characterSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    		characterSet = StringOperator.NUMBER_AND_UPPER_LETTER_SET;
     	}else if(characterType == CharacterType.English && letterType == LetterType.Lower){
-    		characterSet = "abcdefghijklmnopqrstuvwxyz";
+    		characterSet = StringOperator.LOWER_LETTER_SET;
     	}else{
-    		characterSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    		characterSet = StringOperator.UPPER_LETTER_SET;
     	}
+    	Random random = new Random();
     	for(int i=0; i<length; i++){
-    		stringBuilder.append(characterSet.charAt((int)(Math.random()*characterSet.length())));
+    		stringBuilder.append(characterSet[random.nextInt(characterSet.length)]);
     	}
     	return stringBuilder.toString();
     }
@@ -388,15 +347,12 @@ public final class StringOperator {
      */
     public static String getAName(){
     	StringBuilder sb = new StringBuilder();
-    	int randomIndex = (int)(Math.random() * FAMILY_NAME_SET.length);
-    	sb.append(FAMILY_NAME_SET[randomIndex]);
-    	randomIndex = (int)(Math.random() * NAME_SET.length);
-    	sb.append(NAME_SET[randomIndex]);
+    	Random random = new Random();
+    	sb.append(FAMILY_NAME_SET[random.nextInt(FAMILY_NAME_SET.length)]);
+    	sb.append(NAME_SET[random.nextInt(NAME_SET.length)]);
     	double chance = Math.random();
-    	if(chance < THREE_WORD_NAME_CHANCE){
-    		randomIndex = (int)(Math.random() * NAME_SET.length);
-    		sb.append(NAME_SET[randomIndex]);
-    	}
+    	if(chance < THREE_WORD_NAME_CHANCE)
+    		sb.append(NAME_SET[random.nextInt(NAME_SET.length)]);
     	return sb.toString();
     }
     
@@ -465,4 +421,95 @@ public final class StringOperator {
     	bufferedReader.close();
     	return result;
     }
+    
+    private final static String UP_LEFT = "UP_LEFT";
+    private final static String UP = "UP";
+    private final static String LEFT = "LEFT";
+    
+    /**
+	 * 最长公共子序列
+	 * @param str1
+	 * @param str2
+	 * @param options 
+	 * @return
+	 */
+	public static String longestCommonSubsequence(String str1, String str2, Map<String,String> options) {
+		String[] temp = str1.split("");
+		String[] str1AsArray = new String[temp.length+1];
+		str1AsArray[0] = "";
+		for(int i=0; i<temp.length;i++)
+			 str1AsArray[i+1] = temp[i];
+		temp = str2.split("");
+		String[] str2AsArray = new String[temp.length+1];
+		str2AsArray[0] = "";
+		for(int i=0; i<temp.length; i++)
+			str2AsArray[i+1] = temp[i];
+		/*公共子序列的长度矩阵*/
+		int[][] lcsValue = new int[str1AsArray.length][str2AsArray.length];
+		/*由最优子结构性质计算出来的元素状态,标记两个串中的字符是否为一个公共字符*/
+		String[][] lcsPath = new String[str1AsArray.length][str2AsArray.length];
+		for(int i=0; i<lcsValue.length; i++)
+			lcsValue[i][0] = 0;
+		for(int i=0; i<lcsValue[0].length; i++)
+			lcsValue[0][i] = 0;
+		/*
+		 * 定义 c[i, j] 表示长度为i的字符串x和长度为j的字符串y的公共子序列长度，有如下规则
+		 * 
+		 * 1.如果 i 或 j 是0， 说明x和y都是空串, c[i, j] = 0
+		 * 2.如果 i>0,j>0 且两个串的末位相等，这是一个公共字符，两个串都去掉这个末尾, 剩下的部分又成为了一个的重叠子问题 c[i-1, j-1] = c[i, j] - 1
+		 * 3.如果 i>0,j>0 且两个串的末位不相等, 那就得分别考虑一下，串x去掉最后一位和没去掉最后一位的串y比较(c[i-1, j])，还有串y去掉最后一位和没去掉最后的以为的串x(c[i, j-1])比较。
+		 * 哪种情况获得的c[i, j]较大,就取哪种，大的说明去掉的是一个非公共字符，不影响问题。
+		 */
+		for(int i=1; i<lcsValue.length; i++) {
+			for(int j=1; j<lcsValue[i].length; j++) {
+				if(str1AsArray[i].equals(str2AsArray[j])) {
+					lcsValue[i][j] = lcsValue[i-1][j-1] + 1;
+					/*上边三条规则的结果，保存在lcsPath这个矩阵中,根据这个矩阵的值取结果*/
+					lcsPath[i][j] = UP_LEFT;
+				}else if(lcsValue[i-1][j] >= lcsValue[i][j-1]) {
+					lcsValue[i][j] = lcsValue[i-1][j];
+					lcsPath[i][j] = UP;
+				}else {
+					lcsValue[i][j] = lcsValue[i][j-1];
+					lcsPath[i][j] = LEFT;
+				}
+			}
+		}
+		/**
+		 * 局部内部类 用于存储并返回公共子序列
+		 * @author zhaoyang
+		 */
+		class LcsStructure{
+			private List<String> lcsList = null;
+			public LcsStructure() {
+				lcsList = new LinkedList<String>();
+			}
+			@Override
+			public String toString() {
+				StringBuilder sb = new StringBuilder();
+				for(int i=0; i<lcsList.size(); i++)
+					sb.append(lcsList.get(i));
+				return sb.toString();
+			}
+			/*
+			 * 递归访问状态矩阵lcsPath， 取出其中 UP_LEFT 状态的， 说明这是个公共字符。<br>
+			 * 至于为什么实现了一个局部内部类，就是因为这个方法是递归的, 没法在方法里给出一个变量用于保存符合要求的字符。
+			 * 这个局部类, 用成员变量保存符合要求的字符, 然后把成员变量返回给外部方法 
+			 */
+			public void output(String[][] lcsPath, String[] str, int i, int j) {
+				if(i == 0 || j == 0)
+					return;
+				if(lcsPath[i][j].equals(UP_LEFT)) {
+					output(lcsPath, str, i-1, j-1);
+					lcsList.add(str[i]);
+				}else if(lcsPath[i][j].equals(UP))
+					output(lcsPath, str, i-1, j);
+				else
+					output(lcsPath, str, i, j-1);
+			}
+		}
+		LcsStructure lcsStructure = new LcsStructure();
+		lcsStructure.output(lcsPath, str1AsArray, str1AsArray.length-1, str2AsArray.length-1);
+		return lcsStructure.toString();
+	}
 }

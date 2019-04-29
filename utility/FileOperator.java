@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,9 +28,8 @@ import java.util.zip.ZipOutputStream;
 
 public final class FileOperator {
 	
-	private static final int BUFFER_SIZE = 16384;
+	private static final int BUFFER_SIZE = 1048576;
 	private static final String IS_APPEND_CONTENTS = "is.append.contents";
-	private static final String IS_CONTAINS_DIRECTORY = "is.contains.directory";
 	private static final String FILE_SEPARATOR = "file.separator";
 	private static final String CUT_PARENT_PATH = "cut.parent.path";
 	/*
@@ -69,7 +69,7 @@ public final class FileOperator {
 	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>otherParameters) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, BUFFER_SIZE);
 		StringBuilder stringBuilder = new StringBuilder();
 		String currentLineText ="";
 		while((currentLineText = bufferedReader.readLine()) != null){
@@ -90,7 +90,7 @@ public final class FileOperator {
 	public static List<String> readAsList(String sourceFileAbsolutePath, String encoding, Map<String,String>otherParameters)throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, BUFFER_SIZE);
 		List<String> contentList = new ArrayList<String>();
 		String currentLineText = "";
 		while((currentLineText = bufferedReader.readLine()) != null){
@@ -105,26 +105,22 @@ public final class FileOperator {
 	 * 以二进制方式读取文件
 	 * 
 	 * @param sourceFileAbsolutePath 源文件的绝对路径
-	 * @return byte[] 每个元素是此文件的一个字节
+	 * @return <code>List&ltByte&gt</code> 每个元素是此文件的一个字节
 	 * @throws IOException
 	 */
-	public static byte[] toBinaryArray(String sourceFileAbsolutePath) throws IOException{
+	public static List<Byte> toBinaryArray(String sourceFileAbsolutePath) throws IOException{
 		File fPointer = new File(sourceFileAbsolutePath);
-		if(!fPointer.exists()){
+		if(!fPointer.exists())
 			throw new NullPointerException("Program cannot find ["+fPointer.getName()+"].");
-		}
-		if(fPointer.isDirectory()){
+		if(fPointer.isDirectory())
 			throw new IOException("["+fPointer.getName()+"] is not a File.");
-		}
-		byte[] byteArray = new byte[(int)fPointer.length()];
+		List<Byte> bytes = new ArrayList<Byte>();
 		InputStream in = new FileInputStream(sourceFileAbsolutePath);
 		int tempByte = Integer.MIN_VALUE;
-		int index = -1;
-		while((tempByte = in.read())!= -1){
-			byteArray[++index] = (byte) tempByte;
-		}
+		while((tempByte = in.read())!= -1)
+			bytes.add((byte)tempByte);
 		in.close();
-		return byteArray;
+		return bytes;
 	}
 	/**
 	 * 以UTF-8编码方式写文件
@@ -168,8 +164,9 @@ public final class FileOperator {
 		}
 		FileOutputStream fileOutputStream = new FileOutputStream(targetSavingPath, isAppend);
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, encoding);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter, BUFFER_SIZE);
 		bufferedWriter.write(text);
+		bufferedWriter.flush();
 		bufferedWriter.close();
 	}
 	/**
@@ -193,6 +190,8 @@ public final class FileOperator {
 		fileInputStream.close();
 		return properties;
 	}
+	
+	private static final String IS_CONTAINS_DIRECTORY = "is.contains.directory";
 	/**
 	 * 遍历指定拓展名的文件
 	 * 
@@ -203,7 +202,7 @@ public final class FileOperator {
 	 * @return <code>List&ltFile&gt</code> 每个目标文件指针组成的表
 	 * @throws IOException 当搜索起点不存在时
 	 */
-	public static List<File> traversal(String inputFilePath, String suffix, Map<String,String>options) throws IOException{
+	public static List<File> traversal(String inputFilePath, final String suffix, Map<String,String>options) throws IOException{
 		File filePointer = new File(inputFilePath);
 		if(!filePointer.exists())
 			throw new IOException(inputFilePath + " is not exist! Please check your path.");
@@ -218,12 +217,26 @@ public final class FileOperator {
 		while(!fileQueue.isEmpty()){
 			currentFile = fileQueue.remove(0);
 			if(currentFile.isFile()){
-				if(suffix == null || currentFile.getName().endsWith(suffix))
+				if(suffix == null || suffix.trim().equals("") || currentFile.getName().endsWith(suffix))
 					files.add(currentFile);
 			}else{
-				childsOfFile = currentFile.listFiles();
+				childsOfFile = currentFile.listFiles(new FilenameFilter(){
+					@Override
+					public boolean accept(File filePointer, String fileName){
+						if(suffix == null || suffix.trim().equals(""))
+							return true;
+						File current = new File(filePointer.getAbsolutePath()+System.getProperty(FILE_SEPARATOR)+fileName);
+						if(current.isDirectory())
+							return true;
+						if(current.isFile() && current.getName().endsWith(suffix.trim()))
+							return true;
+						return false;
+					}
+				});
 				if(isContainsDirectory)
 					files.add(currentFile);
+				if(childsOfFile == null || childsOfFile.length == 0)
+					continue;
 				for(File f:childsOfFile)
 					fileQueue.add(f);
 			}

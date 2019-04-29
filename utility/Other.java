@@ -1,6 +1,8 @@
 package utility;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -168,15 +170,10 @@ public final class Other {
      * @param throwable
      * @return String 堆栈信息
      */
-    public static String exceptionToStackTrace(Throwable throwable){
-    	StringBuilder stringBuilder = new StringBuilder();
-    	stringBuilder.append(throwable.getMessage()+System.lineSeparator());
-    	StackTraceElement[] traces = throwable.getStackTrace();
-    	for(int i=0; i<traces.length-1; i++){
-    		stringBuilder.append(traces[i].toString() + System.lineSeparator());
-    	}
-    	stringBuilder.append(traces[traces.length-1].toString());
-    	return stringBuilder.toString();
+    public static String stackTraceToString(Throwable throwable){
+    	StringWriter sw = new StringWriter();
+ 	    throwable.printStackTrace(new PrintWriter(sw, true));
+ 	    return sw.getBuffer().toString();
     }
     
     /**
