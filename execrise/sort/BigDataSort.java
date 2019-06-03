@@ -1,4 +1,4 @@
-package execrise;
+package execrise.sort;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,9 +38,9 @@ public class BigDataSort {
 	 * @throws IOException 两个路径存在错误时
 	 */
 	public void execute(String inputFilePath, String outputFilePath) throws IOException{
-		srcFiles = FileOperator.traversal(inputFilePath, ".txt", null);
+		srcFiles = FileOperator.traversal(inputFilePath, ".txt", false);
 		executePartition();
-		filesAfterPartition = FileOperator.traversal(FILES_AFTER_PARTITION_DIRECTORY, ".txt", null);
+		filesAfterPartition = FileOperator.traversal(FILES_AFTER_PARTITION_DIRECTORY, ".txt", false);
 		localSort();
 		merge(outputFilePath);
 		clear(filesAfterPartition);

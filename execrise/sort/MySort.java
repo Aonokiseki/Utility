@@ -1,4 +1,4 @@
-package execrise;
+package execrise.sort;
 
 import utility.Other;
 

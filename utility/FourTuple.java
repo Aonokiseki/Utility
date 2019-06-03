@@ -8,4 +8,8 @@ public class FourTuple<A, B, C, D> extends ThreeTuple<A, B, C>{
 		super(a, b, c);
 		this.fourth = d;
 	}
+	@Override
+	public String toString(){
+		return "("+this.first+", "+this.second+", "+this.third+", "+this.fourth+")";
+	}
 }

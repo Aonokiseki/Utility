@@ -1,11 +1,8 @@
-package execrise;
+package execrise.astar;
 
 import java.io.IOException;
 
-
-
-
-public class Main{
+public class AStarEntrance{
 	public static void main(String[] args){
 		String[][] mazeRaw = new String[][]{
 				new String[]{"S", " ", "x", "x", " ", " ", " ", " ", "x", " ", " ", "x", " ", " ", " ", " ", " ", "x", " ", "x", "x", "x", "x", " ", " ", " "},

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -102,18 +103,13 @@ public final class FileOperator {
 		return contentList;
 	}
 	/**
-	 * 以二进制方式读取文件
+	 * 以二进制方式读取文件(文件不能超过2GB)
 	 * 
 	 * @param sourceFileAbsolutePath 源文件的绝对路径
 	 * @return <code>List&ltByte&gt</code> 每个元素是此文件的一个字节
 	 * @throws IOException
 	 */
 	public static List<Byte> toBinaryArray(String sourceFileAbsolutePath) throws IOException{
-		File fPointer = new File(sourceFileAbsolutePath);
-		if(!fPointer.exists())
-			throw new NullPointerException("Program cannot find ["+fPointer.getName()+"].");
-		if(fPointer.isDirectory())
-			throw new IOException("["+fPointer.getName()+"] is not a File.");
 		List<Byte> bytes = new ArrayList<Byte>();
 		InputStream in = new FileInputStream(sourceFileAbsolutePath);
 		int tempByte = Integer.MIN_VALUE;
@@ -183,32 +179,78 @@ public final class FileOperator {
 		FileInputStream fileInputStream = new FileInputStream(inputFilePath);
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
 		property.load(inputStreamReader);
-		for(Entry<Object,Object> entry:property.entrySet()){
+		for(Entry<Object,Object> entry:property.entrySet())
 			properties.put(entry.getKey().toString(), entry.getValue().toString());
-		}
 		inputStreamReader.close();
 		fileInputStream.close();
 		return properties;
 	}
-	
-	private static final String IS_CONTAINS_DIRECTORY = "is.contains.directory";
+	/**
+	 * 按照指定规则遍历文件
+	 * 
+	 * @param inputFilePath 搜索起点,可以是文件也可以是目录;如果是目录则会遍历该目录下的所有子文件
+	 * @param pattern 正则表达式编译后的模式, 此参数禁止为空
+	 * @param isContainsDirectory 是否包含目录,false-不保存|true-保存, 默认false,即不保存
+	 * @param options 保留参数, 目前没有使用
+	 * @return <code>List&ltFile&gt</code>, 每个元素为符合要求的文件(和目录)
+	 * @throws IOException
+	 */
+	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, Map<String,String> options) throws IOException{
+		if(pattern == null)
+			throw new NullPointerException("pattern is null.");
+		File filePointer = new File(inputFilePath);
+		if(!filePointer.exists())
+			throw new IOException(inputFilePath + " is not exist! Please check your path.");
+		List<File> files = new ArrayList<File>();
+		List<File> fileQueue = new LinkedList<File>();
+		fileQueue.add(filePointer);
+		File currentFile = null;
+		File[] childsOfFile = null;
+		while(!fileQueue.isEmpty()){
+			currentFile = fileQueue.remove(0);
+			if(currentFile.isFile()){
+				/*
+				 * Q: 为什么两个if语句不合并?
+				 * 
+				 * A: 因为只要当前文件类型是File而不是Direcotry时, 都会截断。
+				 * 
+				 * 但只有符合匹配规则的File才会加入将要返回的列表中。
+				 */
+				if(pattern.matcher(currentFile.getName()).find())
+					files.add(currentFile);
+				continue;
+			}
+			if(isContainsDirectory)
+				files.add(currentFile);
+			childsOfFile = currentFile.listFiles(new FilenameFilter(){
+				@Override
+				public boolean accept(File filePointer, String fileName){
+					File current = new File(filePointer.getAbsolutePath()+System.getProperty(FILE_SEPARATOR)+fileName);
+					if(current.isDirectory())
+						return true;
+					return pattern.matcher(fileName).find();
+				}
+			});
+			if(childsOfFile == null || childsOfFile.length == 0)
+				continue;
+			for(File f:childsOfFile)
+				fileQueue.add(f);
+		}
+		return files;
+	}
 	/**
 	 * 遍历指定拓展名的文件
 	 * 
 	 * @param inputFilePath 搜索起点,可以是文件也可以是目录;如果是目录则会遍历该目录下的所有子文件
 	 * @param suffix 目标拓展名,为空则输出所有文件
-	 * @param options 选项<br>
-	 *         <code>is.contains.directory</code> - 遍历时保存文件夹路径, 默认false, 即不保存
+	 * @param isContainsDirectory 是否包含目录,false-不保存|true-保存, 默认false,即不保存
 	 * @return <code>List&ltFile&gt</code> 每个目标文件指针组成的表
 	 * @throws IOException 当搜索起点不存在时
 	 */
-	public static List<File> traversal(String inputFilePath, final String suffix, Map<String,String>options) throws IOException{
+	public static List<File> traversal(String inputFilePath, final String suffix, boolean isContainsDirectory) throws IOException{
 		File filePointer = new File(inputFilePath);
 		if(!filePointer.exists())
 			throw new IOException(inputFilePath + " is not exist! Please check your path.");
-		boolean isContainsDirectory = false;
-		if(MapOperator.mapHasNonNullValue(options, IS_CONTAINS_DIRECTORY))
-			isContainsDirectory = Boolean.valueOf(options.get(IS_CONTAINS_DIRECTORY));
 		List<File> files = new ArrayList<File>();
 		List<File> fileQueue = new LinkedList<File>();
 		fileQueue.add(filePointer);
@@ -219,27 +261,25 @@ public final class FileOperator {
 			if(currentFile.isFile()){
 				if(suffix == null || suffix.trim().equals("") || currentFile.getName().endsWith(suffix))
 					files.add(currentFile);
-			}else{
-				childsOfFile = currentFile.listFiles(new FilenameFilter(){
-					@Override
-					public boolean accept(File filePointer, String fileName){
-						if(suffix == null || suffix.trim().equals(""))
-							return true;
-						File current = new File(filePointer.getAbsolutePath()+System.getProperty(FILE_SEPARATOR)+fileName);
-						if(current.isDirectory())
-							return true;
-						if(current.isFile() && current.getName().endsWith(suffix.trim()))
-							return true;
-						return false;
-					}
-				});
-				if(isContainsDirectory)
-					files.add(currentFile);
-				if(childsOfFile == null || childsOfFile.length == 0)
-					continue;
-				for(File f:childsOfFile)
-					fileQueue.add(f);
+				continue;
 			}
+			if(isContainsDirectory)
+				files.add(currentFile);
+			childsOfFile = currentFile.listFiles(new FilenameFilter(){
+				@Override
+				public boolean accept(File filePointer, String fileName){
+					if(suffix == null || suffix.trim().equals(""))
+						return true;
+					File current = new File(filePointer.getAbsolutePath()+System.getProperty(FILE_SEPARATOR)+fileName);
+					if(current.isDirectory())
+						return true;
+					return (current.isFile() && current.getName().endsWith(suffix.trim()));
+				}
+			});
+			if(childsOfFile == null || childsOfFile.length == 0)
+				continue;
+			for(File f:childsOfFile)
+				fileQueue.add(f);
 		}
 		return files;
 	}
@@ -466,6 +506,8 @@ public final class FileOperator {
 			relativePath = current.getAbsolutePath().replace(from.getParentFile().getAbsolutePath(), "");
 			newFilePointer = new File(to.getAbsolutePath() + System.getProperty(FILE_SEPARATOR) + relativePath);
 			if(current.isFile()){
+				if(current.equals(newFilePointer))
+					newFilePointer = new File(newSingleFileNameWhenSourceEqualsDestnation(current));
 				fileCopy(current, newFilePointer);
 				continue;
 			}
@@ -475,5 +517,22 @@ public final class FileOperator {
 			for(File fPointer : childsOfCurrent)
 				files.add(fPointer);
 		}
+	}
+	/**
+	 * 复制单个文件时，如果该文件所在的父级目录等同于其复制的目的地时, 在其后方添加一个时间戳
+	 * @param current
+	 * @return
+	 */
+	private static String newSingleFileNameWhenSourceEqualsDestnation(File current){
+		StringBuilder sb = new StringBuilder();
+		String currentName = current.getName();
+		int lastIndexOfPoint = currentName.lastIndexOf(".");
+		String extension = currentName.substring(lastIndexOfPoint);
+		String firstName = currentName.substring(0, lastIndexOfPoint);
+		sb.append(current.getParent());
+		sb.append(System.getProperty(FILE_SEPARATOR));
+		sb.append(firstName); sb.append("_"); sb.append(System.currentTimeMillis());
+		sb.append(extension);
+		return sb.toString();
 	}
 }

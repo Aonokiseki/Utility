@@ -68,6 +68,7 @@ public final class MapOperator {
 			return false;
 		return true;
 	}
+	
 	/**
 	 * 
 	 * 内部类, 实现了比较器接口的一个方法:compare(), 目的是为存放于Map中，简单的数据做排序

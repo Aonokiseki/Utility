@@ -151,16 +151,13 @@ public final class MathOperator {
      * @return Double 距离
      */
     public static <T extends Number> Double minkowskiDistance(List<T> vector1, List<T> vector2, int dimension){
-    	if(vector1.size() != vector2.size()){
+    	if(vector1.size() != vector2.size())
     		throw new IllegalArgumentException("One vector's size don't equal the other's");
-    	}
     	Double result = new Double(0.0);
-    	if(dimension < 1){
+    	if(dimension < 1)
     		dimension = 1;
-    	}
-    	for(int i=0, vectorSize=vector1.size(); i<vectorSize; i++){
+    	for(int i=0, vectorSize=vector1.size(); i<vectorSize; i++)
     		result+=Math.pow((vector1.get(i).doubleValue() - vector2.get(i).doubleValue()), dimension);
-    	}
     	result = Math.pow(result, (1.0/((double)dimension)));
     	return result;
     }
@@ -173,9 +170,8 @@ public final class MathOperator {
      * @return Double 余弦值
      */
     public static <T extends Number> Double cosine(List<T> vector1, List<T> vector2){
-    	if(vector1.size() != vector2.size()){
+    	if(vector1.size() != vector2.size())
     		throw new IllegalArgumentException("One vector's size don't equal the other's");
-    	}
     	Double numerator = new Double(0.0);
     	Double denominatorPart1 = new Double(0.0);
     	Double denominatorPart2 = new Double(0.0);
@@ -196,9 +192,8 @@ public final class MathOperator {
      */
     public static int findMaxPrime(int n){
     	for(int i=n; i>1; i--){
-    		if(isPrimes(i)){
+    		if(isPrimes(i))
     			return i;
-    		}
     	}
     	return 2;
     }
@@ -212,9 +207,8 @@ public final class MathOperator {
      */
     public static int findMinPrime(int n){
     	for(int i=n;i<=Integer.MAX_VALUE;i++){
-    		if(isPrimes(i)){
+    		if(isPrimes(i))
     			return i;
-    		}
     	}
     	return Integer.MAX_VALUE;
     }
@@ -306,9 +300,8 @@ public final class MathOperator {
      */
     public static double sumOfHarmoric(int n){
     	double sum = 0.0;
-    	for(int i=1; i<=n; i++){
+    	for(int i=1; i<=n; i++)
     		sum += 1.0 / i;
-    	}
     	return sum;
     }
     /**
@@ -318,9 +311,8 @@ public final class MathOperator {
      */
     public static double sumOfAlternatingHarmonic(int n){
     	double sum = 0.0;
-    	for(int i=1; i<=n; i++){
+    	for(int i=1; i<=n; i++)
     		sum += Math.pow(-1, i+1) * (1.0 / i);
-    	}
     	return sum;
     }
     /**
@@ -454,9 +446,8 @@ public final class MathOperator {
 	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return Double.NaN;
 	   double result = 0.0;
-	   for(int i=0, size=vector1.size(); i<size; i++){
+	   for(int i=0, size=vector1.size(); i<size; i++)
 		   result += vector1.get(i) * vector2.get(i);
-	   }
 	   return result;
    }
    /**

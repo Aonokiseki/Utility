@@ -407,13 +407,17 @@ public final class StringOperator {
      * @return <code>&ltList&gt</code> 文本列表
      * @throws IOException 读取文本串发生错误时
      */
-    public static List<String> getStringAsLines(String str, Map<String,String> param)throws IOException{
+    public static List<String> asLines(String str, Map<String,String> param)throws IOException{
     	List<String> result = new ArrayList<String>();
     	if(str == null || str.isEmpty())
     		return result;
     	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8")));
     	String current;
     	while((current = bufferedReader.readLine())!=null){
+    		if(param == null || param.isEmpty()){
+    			result.add(current);
+    			continue;
+    		}
     		if(param.containsKey(CONTAINS_SPACE_LINE) && Boolean.valueOf(param.get(CONTAINS_SPACE_LINE)).booleanValue() == true && current.isEmpty())
     			continue;
     		result.add(current.trim());

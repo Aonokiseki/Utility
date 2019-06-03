@@ -1,4 +1,4 @@
-package execrise;
+package execrise.sort;
 
 public class Sort {
 	private Sort(){}
