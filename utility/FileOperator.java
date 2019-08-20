@@ -29,10 +29,15 @@ import java.util.zip.ZipOutputStream;
 
 public final class FileOperator {
 	
-	private static final int BUFFER_SIZE = 1048576;
+	/*默认缓冲区大小被我调整成了 32MB */
+	private static final int DEFAULT_BUFFER_SIZE = 32 /*MiB*/;
+	private static final int ONE_MIB = /* 1024 * 1024 bytes = */ 1048576 /*bytes*/;
 	private static final String IS_APPEND_CONTENTS = "is.append.contents";
 	private static final String FILE_SEPARATOR = "file.separator";
 	private static final String CUT_PARENT_PATH = "cut.parent.path";
+	private static final String NOT_APPEND_LINESEPARATOR = "not.append.lineserparator";
+	private static final String RW_BUFFER_SIZE = "rw.buffer.size";
+	private static final String DEFAULT_ENCODING = "UTF-8";
 	/*
 	 * 防止实例化
 	 */
@@ -45,7 +50,7 @@ public final class FileOperator {
 	 * @throws IOException 源文件不在指定路径下
 	 */
 	public static String read(String sourceFileAbsolutePath)throws IOException{
-		return read(sourceFileAbsolutePath, "UTF-8", new HashMap<String,String>());
+		return read(sourceFileAbsolutePath, null, new HashMap<String,String>());
 	}
 	/**
 	 * 以指定的编码方式读文件
@@ -63,22 +68,38 @@ public final class FileOperator {
 	 * 
 	 * @param sourceFileAbsolutePath 源文件的绝对路径
 	 * @param encoding 以该参数保存的编码读文件
-	 * @param otherParameters 保留参数,待后续添加
+	 * @param otherParameters 保留参数,待后续添加<br>
+	 * <code>not.append.lineserparator</code> 每行后方是否追加换行符, true-不追加|false-追加, 默认false<br>
+	 * <code>rw.buffer.size</code> 缓冲区大小, 范围[1, 1024], 单位MB, 默认32M, 值非法时取默认值.
 	 * @return String 文件中的字符串
 	 * @throws IOException 源文件不在指定路径下
 	 */
 	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>otherParameters) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
+		if(encoding == null || "".equals(encoding.trim()))
+			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, BUFFER_SIZE);
+		int bufferSize = DEFAULT_BUFFER_SIZE;
+		if(otherParameters != null && otherParameters.containsKey(RW_BUFFER_SIZE) && 
+				otherParameters.get(RW_BUFFER_SIZE) != null && !"".equals(otherParameters.get(RW_BUFFER_SIZE).trim()))
+			bufferSize = Integer.valueOf(otherParameters.get(RW_BUFFER_SIZE));
+		if(bufferSize <= 0 || bufferSize > 1024)
+			bufferSize = 32;
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
 		StringBuilder stringBuilder = new StringBuilder();
-		String currentLineText ="";
+		boolean doNotAppendLineSeparator = false;
+		if(otherParameters != null && otherParameters.containsKey(NOT_APPEND_LINESEPARATOR))
+			doNotAppendLineSeparator = Boolean.valueOf(otherParameters.get(NOT_APPEND_LINESEPARATOR));
+		String currentLineText = null;
 		while((currentLineText = bufferedReader.readLine()) != null){
-			stringBuilder.append(currentLineText + System.lineSeparator());
+			stringBuilder.append(currentLineText);
+			if(!doNotAppendLineSeparator)
+				stringBuilder.append(System.lineSeparator());
 		}
 		bufferedReader.close();
 		return stringBuilder.toString();
 	}
+	
 	/**
 	 * 以指定编码, 按照列表方式读文件
 	 * 
@@ -90,10 +111,12 @@ public final class FileOperator {
 	 */
 	public static List<String> readAsList(String sourceFileAbsolutePath, String encoding, Map<String,String>otherParameters)throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
+		if(encoding == null || "".equals(encoding.trim()))
+			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, BUFFER_SIZE);
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, DEFAULT_BUFFER_SIZE * ONE_MIB);
 		List<String> contentList = new ArrayList<String>();
-		String currentLineText = "";
+		String currentLineText = null;
 		while((currentLineText = bufferedReader.readLine()) != null){
 			if(currentLineText.isEmpty() || "".equals(currentLineText.trim()) || currentLineText.length() == 0)
 				continue;
@@ -127,7 +150,7 @@ public final class FileOperator {
 	 * 
 	 */
 	public static void write(String targetSavingPath, String text) throws IOException{
-		write(targetSavingPath, text, "UTF-8", new HashMap<String,String>());
+		write(targetSavingPath, text, null, new HashMap<String,String>());
 	}
 	/**
 	 * 以指定编码方式写文件
@@ -149,18 +172,24 @@ public final class FileOperator {
 	 * @param encoding 编码方式
 	 * @param otherParameters 其它参数, 目前:<br>
 	 * <code>is.append.contents</code> 是否追加内容到末尾,true/false,默认false,不追加;空值视为false.<br>
-	 * 注意追加文本需要自行调整文本格式.
+	 * 注意追加文本需要自行调整文本格式.<br>
+	 * <code>rw.buffer.size</code> 缓冲区大小, 范围[1, 1024], 单位MB, 默认32M, 值非法时取默认值.
 	 * @throws IOException 路径不存在
 	 * 
 	 */
 	public static void write(String targetSavingPath, String text, String encoding, Map<String,String>otherParameters) throws IOException{
 		boolean isAppend = false;
-		if(otherParameters != null && !otherParameters.isEmpty() && otherParameters.get(IS_APPEND_CONTENTS) != null){
+		if(otherParameters != null && !otherParameters.isEmpty() && otherParameters.get(IS_APPEND_CONTENTS) != null)
 			isAppend = Boolean.valueOf(otherParameters.get(IS_APPEND_CONTENTS).trim());
-		}
+		int bufferSize = DEFAULT_BUFFER_SIZE;
+		if(otherParameters != null && otherParameters.containsKey(RW_BUFFER_SIZE) && 
+				otherParameters.get(RW_BUFFER_SIZE) != null && !"".equals(otherParameters.get(RW_BUFFER_SIZE).trim()))
+			bufferSize = Integer.valueOf(otherParameters.get(RW_BUFFER_SIZE));
 		FileOutputStream fileOutputStream = new FileOutputStream(targetSavingPath, isAppend);
+		if(encoding == null || "".equals(encoding.trim()))
+			encoding = DEFAULT_ENCODING;
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, encoding);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter, BUFFER_SIZE);
+		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter, bufferSize * ONE_MIB);
 		bufferedWriter.write(text);
 		bufferedWriter.flush();
 		bufferedWriter.close();
@@ -177,6 +206,8 @@ public final class FileOperator {
 		Map<String,String> properties = new HashMap<String,String>();
 		Properties property = new Properties();
 		FileInputStream fileInputStream = new FileInputStream(inputFilePath);
+		if(encoding == null || "".equals(encoding.trim()))
+			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
 		property.load(inputStreamReader);
 		for(Entry<Object,Object> entry:property.entrySet())
@@ -216,8 +247,9 @@ public final class FileOperator {
 				 * 
 				 * 但只有符合匹配规则的File才会加入将要返回的列表中。
 				 */
-				if(pattern.matcher(currentFile.getName()).find())
+				if(pattern.matcher(currentFile.getName()).find()){
 					files.add(currentFile);
+				}	
 				continue;
 			}
 			if(isContainsDirectory)
@@ -314,7 +346,7 @@ public final class FileOperator {
 		FileInputStream fileInputStream = null;
 		BufferedInputStream bufferedInputStream = null;
 		ZipEntry zipEntry = null;
-		byte[] buffer = new byte[BUFFER_SIZE];
+		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 		int read = 0;
 		fileOutputStream = new FileOutputStream(zipPointer);
 		bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -363,8 +395,8 @@ public final class FileOperator {
 				zipEntry = new ZipEntry(relativePath);
 				zipOutputStream.putNextEntry(zipEntry);
 				fileInputStream = new FileInputStream(fPointer);
-				bufferedInputStream = new BufferedInputStream(fileInputStream, BUFFER_SIZE);
-				while((read=bufferedInputStream.read(buffer, 0, BUFFER_SIZE)) != -1){
+				bufferedInputStream = new BufferedInputStream(fileInputStream, DEFAULT_BUFFER_SIZE);
+				while((read=bufferedInputStream.read(buffer, 0, DEFAULT_BUFFER_SIZE)) != -1){
 					zipOutputStream.write(buffer,0,read);
 		        }
 			}
@@ -411,7 +443,7 @@ public final class FileOperator {
 		File entryFileParent = null;
 		BufferedInputStream bufferedInputStream = null;
         BufferedOutputStream bufferedOutputStream = null;
-        byte[] buffer = new byte[BUFFER_SIZE];
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int count = 0;
         //======================================================//
         /*
@@ -449,7 +481,7 @@ public final class FileOperator {
 				}
 				bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(entryFilePointer));
 				bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-				while((count = bufferedInputStream.read(buffer, 0, BUFFER_SIZE))!= -1){
+				while((count = bufferedInputStream.read(buffer, 0, DEFAULT_BUFFER_SIZE))!= -1){
 					bufferedOutputStream.write(buffer, 0, count);
 				}
 				bufferedOutputStream.flush();
@@ -507,7 +539,7 @@ public final class FileOperator {
 			newFilePointer = new File(to.getAbsolutePath() + System.getProperty(FILE_SEPARATOR) + relativePath);
 			if(current.isFile()){
 				if(current.equals(newFilePointer))
-					newFilePointer = new File(newSingleFileNameWhenSourceEqualsDestnation(current));
+					newFilePointer = new File(newSingleFileNameWhenSourceEqualsDestination(current));
 				fileCopy(current, newFilePointer);
 				continue;
 			}
@@ -523,7 +555,7 @@ public final class FileOperator {
 	 * @param current
 	 * @return
 	 */
-	private static String newSingleFileNameWhenSourceEqualsDestnation(File current){
+	private static String newSingleFileNameWhenSourceEqualsDestination(File current){
 		StringBuilder sb = new StringBuilder();
 		String currentName = current.getName();
 		int lastIndexOfPoint = currentName.lastIndexOf(".");

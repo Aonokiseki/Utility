@@ -1,145 +1,167 @@
 package utility;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 
 public final class MapOperator {
+	
 	private MapOperator(){}
-	
-	public enum SortItem{
-		Key, Value;
-	}
-	public enum OrderBy{
-		Natural, Number, Calendar, HashCode
-	}
-	
+
 	/**
-	 * 对Map的Key按照字典顺序做排序
-	 * @param map 原Map
-	 * @param isDesc 是否降序
-	 * @return 排序后的Map
+	 * 对<code>Map&ltString, ?&gt</code>的values按自然排序放入<code>LinkedHashMap&ltString, Object&gt</code>对象中
+	 * @param map 待处理的<code>Map&ltString, ?&gt</code>
+	 * @return LinkedHashMap&ltString, Object&gt
 	 */
-	public static Map<String, String> sortByKey(Map<String,String> map, boolean isDesc){
-		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
-		Collections.sort(list, new EntryComparator(SortItem.Key, null, null, isDesc));
-		Map<String, String> newMap = new LinkedHashMap<String, String>();
+	public static LinkedHashMap<String, Object> sortKeyOrderByNatural(Map<String, ?> map){
+		ArrayList<Map.Entry<String, ?>> list = new ArrayList<Map.Entry<String, ?>>(map.entrySet());
+		Collections.sort(list, new Comparator<Entry<String, ?>>(){
+			@Override
+			public int compare(Entry<String, ?> entry1, Entry<String, ?> entry2){
+				return entry1.getKey().compareTo(entry2.getKey());
+			}
+		});
+		LinkedHashMap<String, Object> newMap = new LinkedHashMap<String, Object>();
 		for(int i=0; i<list.size(); i++)
             newMap.put(list.get(i).getKey(), list.get(i).getValue());   
         return newMap;  
 	}
 	/**
-	 * 对Map的value按照不同方式排序, 此方法不会破坏原Map
-	 * @param map 原Map
-	 * @param orderBy 根据何种方式排序, 可选项 HashCode-哈希|Natural-字典|Number-数值|Calendar-日期<br>
-	 * Number要求所有的value必须是数字,Calendar要求所有的value必须是日期, 若value格式非法, 则不会排序
-	 * @param formatItem 如果按照日历排序,则需在此处指明日期字符串的格式, 另见{@link TimeFormat}
-	 * @param isDesc 是否降序
-	 * @return 排序后的Map
+	 * 对<code>Map&ltString, Calendar&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, Calendar&gt</code>对象中
+	 * @param map  待处理的<code>Map&ltString, Calendar&gt</code>
+	 * @param desc 是否降序
+	 * @return LinkedHashMap&ltString, Calendar&gt
 	 */
-	public static Map<String, String> sortByValue(Map<String, String> map, OrderBy orderBy, TimeFormat timeFormat, boolean isDesc){
-		ArrayList<Map.Entry<String, String>> list = new ArrayList<Map.Entry<String,String>>(map.entrySet());
-		Collections.sort(list, new EntryComparator(SortItem.Value, orderBy, timeFormat, isDesc));
-		Map<String, String> newMap = new LinkedHashMap<String, String>();
-		for(int i=0; i<list.size(); i++)
-            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
+	public static LinkedHashMap<String, Calendar> sortValueOrderByCalendar(Map<String, Calendar> map, boolean desc){
+		ArrayList<Map.Entry<String, Calendar>> list = new ArrayList<Map.Entry<String, Calendar>>(map.entrySet());
+		Collections.sort(list, new Comparator<Entry<String, Calendar>>(){
+			@Override
+			public int compare(Entry<String, Calendar> e1, Entry<String, Calendar> e2){
+				return e1.getValue().compareTo(e2.getValue());
+			}
+		});
+		LinkedHashMap<String, Calendar> newMap = new LinkedHashMap<String, Calendar>();
+		if(desc){
+			for(int i=0; i<list.size(); i++)
+	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
+		}else{
+			for(int i=list.size()-1; i>=0; i--)
+	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
+		}
         return newMap;  
+	}
+	/**
+	 * 对<code>Map&ltString, LocalDateTime&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, LocalDateTime&gt</code>对象中
+	 * @param map 待处理的<code>Map&ltString, LocalDateTime&gt</code>
+	 * @param desc 是否降序
+	 * @return LinkedHashMap&ltString, LocalDateTime&gt
+	 */
+	public static LinkedHashMap<String, LocalDateTime> sortValueOrderByLocalDateTime(Map<String, LocalDateTime>map, boolean desc){
+		ArrayList<Map.Entry<String, LocalDateTime>> list = new ArrayList<Map.Entry<String, LocalDateTime>>(map.entrySet());
+		Collections.sort(list, new Comparator<Entry<String, LocalDateTime>>(){
+			@Override
+			public int compare(Entry<String, LocalDateTime> e1, Entry<String, LocalDateTime> e2){
+				return e1.getValue().compareTo(e2.getValue());
+			}
+		});
+		LinkedHashMap<String, LocalDateTime> newMap = new LinkedHashMap<String, LocalDateTime>();
+		if(desc){
+			for(int i=0; i<list.size(); i++)
+	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
+		}else{
+			for(int i=list.size()-1; i>=0; i--)
+	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
+		}
+        return newMap;
+	}
+	/**
+	 * 对<code>Map&ltString, T&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, Double&gt</code>对象中
+	 * @param map  待处理的<code>Map&ltString, T&gt</code>, value的类型必须为Number或其子类
+	 * @param desc 是否降序
+	 * @return LinkedHashMap&ltString, Double&gt
+	 */
+	public static <T extends Number> LinkedHashMap<String, Double> sortValueOrderByNumber(Map<String, T> map, boolean desc){
+		ArrayList<Map.Entry<String, T>> list = new ArrayList<Map.Entry<String, T>>(map.entrySet());
+		Collections.sort(list, new Comparator<Entry<String, T>>(){
+			@Override
+			public int compare(Entry<String, T> e1, Entry<String, T> e2){
+				return compareResult(e1.getValue().doubleValue(), e2.getValue().doubleValue());
+			}
+		});
+		LinkedHashMap<String, Double> newMap = new LinkedHashMap<String, Double>();
+		if(desc){
+			for(int i=list.size()-1; i>=0; i--)
+				newMap.put(list.get(i).getKey(), list.get(i).getValue().doubleValue());
+		}else{
+			for(int i=0; i<list.size(); i++)
+	            newMap.put(list.get(i).getKey(), list.get(i).getValue().doubleValue());
+		}
+        return newMap;  
+	}
+	/**
+	 * 将<code>Map&ltString, String&gt</code>对象转换为<code>Map&ltString, Double&gt</code>对象
+	 * @param map
+	 * @return
+	 */
+	public static Map<String,Double> parseValuesToDouble(Map<String,String> map){
+		Map<String, Double> result = new HashMap<String,Double>();
+		for(Entry<String,String> e: map.entrySet())
+			result.put(e.getKey(), Double.valueOf(e.getValue()));
+		return result;
+	}
+	/**
+	 * 将<code>Map&ltString, String&gt</code>对象转换为<code>Map&ltString, Calendar&gt</code>对象
+	 * @param map
+	 * @param timeFormat 日期格式
+	 * @return
+	 * @throws ParseException - 日期格式解析错误时
+	 */
+	public static Map<String, Calendar> parseValuesToCalendar(Map<String, String> map, TimeFormat timeFormat) throws ParseException{
+		Map<String, Calendar> result = new HashMap<String, Calendar>();
+		for(Entry<String,String> e: map.entrySet())
+			result.put(e.getKey(), DateOperator.stringToCalendar(e.getValue(), timeFormat));
+		return result;
+	}
+	/**
+	 * 将<code>Map&ltString, String&gt</code>对象转换为<code>Map&ltString, LocalDateTime&gt</code>对象
+	 * @param map
+	 * @param pattern
+	 * @return
+	 */
+	public static Map<String, LocalDateTime> parseValuesToLocalDateTime(Map<String, String> map, String pattern){
+		Map<String, LocalDateTime> result = new HashMap<String, LocalDateTime>();
+		for(Entry<String, String> e: map.entrySet())
+			result.put(e.getKey(), ChronoOperator.stringToLocalDateTime(e.getValue(), pattern));
+		return result;
+	}
+	
+	private static int compareResult(double n1, double n2){
+		if (n1 - n2 > 0) return 1;
+		else if (n1 - n2 < 0) return -1;
+		else return 0;
 	}
 	
 	/**
-	 * map是否有指定key的非空value
-	 * 
+	 * 安全获取map中的指定key的value<br>
+	 * ① map以及key, 二者任意一个是空或空串, 直接返回null;<br>
+	 * ② map不包含key, 直接返回null;<br>
 	 * @param map
 	 * @param key
-	 * @return boolean
+	 * @return
 	 */
-	public static boolean mapHasNonNullValue(Map<String,String> map, String key){
+	public static <T> T safetyGet(Map<String, T> map, String key){
 		if(map == null || map.isEmpty() || map.size() == 0 || key == null || "".equals(key.trim()))
-			return false;
+			return null;
 		if(!map.containsKey(key))
-			return false;
-		if(map.get(key) == null || "".equals(map.get(key).trim()))
-			return false;
-		return true;
-	}
-	
-	/**
-	 * 
-	 * 内部类, 实现了比较器接口的一个方法:compare(), 目的是为存放于Map中，简单的数据做排序
-	 *
-	 */
-	private static class EntryComparator implements Comparator<Map.Entry<String,String>>{
-		private SortItem sortItem;
-		private OrderBy orderBy;
-		private TimeFormat timeFormat;
-		private boolean isDESC;
-		
-		public EntryComparator(SortItem sortItem, OrderBy orderBy, TimeFormat timeFormat, boolean isDESC){
-			this.orderBy = orderBy;
-			this.sortItem = sortItem;
-			this.isDESC = isDESC;
-			this.timeFormat = timeFormat;
-		}
-		@Override
-		public int compare(Entry<String, String> arg0, Entry<String, String> arg1) {
-			if(sortItem == SortItem.Key){
-				if(isDESC)
-					return arg1.getKey().compareTo(arg0.getKey());
-				return arg0.getKey().compareTo(arg1.getKey());
-			}
-			if(orderBy == OrderBy.Natural){
-				if(isDESC)
-					return arg1.getValue().compareTo(arg0.getValue());
-				return arg0.getValue().compareTo(arg1.getValue());
-			}
-			if(orderBy == OrderBy.HashCode){
-				if(isDESC)
-					return arg1.getValue().hashCode() - arg0.getValue().hashCode();
-				return arg0.getValue().hashCode() - arg1.getValue().hashCode();
-			}
-			if(orderBy == OrderBy.Calendar){
-				int result = 0;
-				try{
-					result = compare(
-							DateOperator.stringToCalendar(arg0.getValue(), timeFormat),
-							DateOperator.stringToCalendar(arg1.getValue(), timeFormat),
-							isDESC);
-				}catch (NullPointerException | ParseException e) {
-					return 0;
-				}
-				return result;
-			}
-			try{
-				return compare(Double.valueOf(arg0.getValue()), Double.valueOf(arg1.getValue()), isDESC);
-			}catch(NumberFormatException e){
-				return 0;
-			}
-		}
-		public int compare(double arg0, double arg1, boolean isDESC){
-			if(isDESC){
-				if(arg1 - arg0 > 0) return 1;
-				if(arg1 - arg0 < 0) return -1;
-				return 0;
-			}
-			if(arg0 - arg1 > 0) return 1;
-			if(arg0 - arg1 < 0) return -1;
-			return 0;
-		}
-		public int compare(Calendar c1, Calendar c2, boolean isDESC){
-			if(isDESC){
-				if(c2.after(c1)) return 1;
-				if(c2.before(c1)) return -1;
-				return 0;
-			}
-			if(c1.after(c2)) return 1;
-			if(c1.before(c2)) return -1;
-			return 0;
-		}
+			return null;
+		return map.get(key);
 	}
 }

@@ -510,4 +510,14 @@ public final class MathOperator {
    	}
    	return result;
    }
+   /**
+    * 以a为底b的对数
+    * 
+    * @param a
+    * @param b
+    * @return
+    */
+   public static double baseNLogarithmic(double a, double b){
+	   return Math.log10(b) / Math.log10(a);
+   }
 }
