@@ -164,4 +164,37 @@ public final class MapOperator {
 			return null;
 		return map.get(key);
 	}
+	/**
+	 * 统计<code>Map</code>中的Values的最大值和对应的key<code>(maxValueAndKey)</code>，最小值和对应的key<code>(minValueAndKey)</code>,<br/>
+	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
+	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
+	 * @param map 
+	 * @return <code>FiveTuple&ltEntry&ltString, T&gt, Entry&ltString, T&gt, Double, Double, Double&gt(maxValueAndKey, minValueAndKey, sumOfEachItem, expectation, variance)</code>
+	 */
+	public static <T extends Number> FiveTuple<Entry<String, T>, Entry<String, T>,Double,Double,Double> statistics(Map<String, T> map){
+		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
+		Entry<String, T> maxValueAndKey = null; Entry<String, T> minValueAndKey = null;
+		double expectation = 0.0; double variance = 0.0;
+		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
+		double sumOfEachItem = 0.0; double sumOfSquareOfEachItem = 0.0; 
+		int size = map.size();
+		for(Entry<String, T> entry : map.entrySet()){
+			if(entry.getValue().doubleValue() > maxValue){
+				maxValue = entry.getValue().doubleValue();
+				maxValueAndKey = entry;
+			}
+			if(entry.getValue().doubleValue() < minValue){
+				minValue = entry.getValue().doubleValue();
+				minValueAndKey = entry;
+			}
+			sumOfEachItem += entry.getValue().doubleValue();
+			sumOfSquareOfEachItem += Math.pow(entry.getValue().doubleValue(), 2.0);
+		}
+		expectation = sumOfEachItem / size;
+		theSquareOfTheExpectation = Math.pow((sumOfEachItem/size),2.0);
+		theExpectationOfTheSquare = sumOfSquareOfEachItem/size;
+		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
+		return new FiveTuple<Entry<String, T>, Entry<String, T>, Double, Double, Double>(
+				maxValueAndKey, minValueAndKey, sumOfEachItem, expectation, variance);
+	}
 }

@@ -442,12 +442,27 @@ public final class MathOperator {
     * @param vector2
     * @return
     */
-   public static double innerProduct(List<Double> vector1, List<Double>vector2){
+   public static <T extends Number> double innerProduct(List<T> vector1, List<T>vector2){
 	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return Double.NaN;
 	   double result = 0.0;
 	   for(int i=0, size=vector1.size(); i<size; i++)
-		   result += vector1.get(i) * vector2.get(i);
+		   result += vector1.get(i).doubleValue() * vector2.get(i).doubleValue();
+	   return result;
+   }
+   /**
+    * 向量叉积, 要求向量维数必须是3
+    * @param former
+    * @param latter
+    * @return
+    */
+   public static <T extends Number> List<Double> crossProduct(List<T> former, List<T> latter){
+	   if(former.size() != 3 || latter.size() != 3)
+		   throw new IllegalArgumentException("please check your vectors length!");
+	   List<Double> result = new ArrayList<Double>(3);
+	   result.add(0, former.get(1).doubleValue() * latter.get(2).doubleValue() - former.get(2).doubleValue() * latter.get(1).doubleValue());
+	   result.add(1, former.get(2).doubleValue() * latter.get(0).doubleValue() - former.get(0).doubleValue() * latter.get(2).doubleValue());
+	   result.add(2, former.get(0).doubleValue() * latter.get(1).doubleValue() - former.get(1).doubleValue() * latter.get(0).doubleValue());
 	   return result;
    }
    /**
@@ -456,12 +471,12 @@ public final class MathOperator {
     * @param vector2
     * @return
     */
-   public static List<Double> vectorAdd(List<Double> vector1, List<Double> vector2){
+   public static <T extends Number>List<Double> vectorAdd(List<T> vector1, List<T> vector2){
 	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return null;
 	   List<Double> result = new ArrayList<Double>();
 	   for(int i=0,size=vector1.size(); i<size; i++)
-		   result.add(i, vector1.get(i) + vector2.get(i));
+		   result.add(i, vector1.get(i).doubleValue() + vector2.get(i).doubleValue());
 	   return result;
    }
    /**
@@ -470,12 +485,12 @@ public final class MathOperator {
     * @param vector2
     * @return
     */
-   public static List<Double> vectorMinus(List<Double> vector1, List<Double> vector2){
+   public static <T extends Number> List<Double> vectorMinus(List<T> vector1, List<T> vector2){
 	   if(vector1 == null || vector1.isEmpty() || vector2 == null || vector2.isEmpty() || vector1.size() != vector2.size())
 		   return null;
 	   List<Double> result = new ArrayList<Double>();
 	   for(int i=0,size=vector1.size(); i<size; i++)
-		   result.add(i, vector1.get(i) - vector2.get(i));
+		   result.add(i, vector1.get(i).doubleValue() - vector2.get(i).doubleValue());
 	   return result;
    }
    /**
@@ -484,12 +499,12 @@ public final class MathOperator {
     * @param vector 向量
     * @return
     */
-   public static List<Double> vectorMultiplyingConstant(double constant, List<Double> vector){
+   public static List<Double> vectorMultiplyingConstant(double constant, List<? extends Number> vector){
 	   if(vector == null || vector.isEmpty())
 		   return null;
 	   List<Double> result = new ArrayList<Double>();
 	   for(int i=0,size=vector.size(); i<size; i++)
-		   result.add(i, vector.get(i) * constant);
+		   result.add(i, vector.get(i).doubleValue() * constant);
 	   return result;
 	}
    
