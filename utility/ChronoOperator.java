@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Random;
 
 public class ChronoOperator {
@@ -38,7 +40,9 @@ public class ChronoOperator {
 	public static LocalTime getARandomLocalTime(LocalTime time1, LocalTime time2){
 		LocalTime lower = time1;
 		LocalTime higher = time2;
-		if(time1.isAfter(time2)){ lower = time2; higher = time1;}
+		if(time1.isAfter(time2)){ 
+			lower = time2; higher = time1;
+		}
 		Random random = new Random();
 		long timeFix = (long)(random.nextDouble() * Duration.between(lower, higher).toNanos());
 		LocalTime result = lower.plusNanos(timeFix);
@@ -120,10 +124,42 @@ public class ChronoOperator {
 		return LocalTime.parse(time, dateTimeFormatter);
 	}
 	/**
+	 * <code>Date</code>转换为<code>LocalDateTime</code>
+	 * @param date
+	 * @return
+	 */
+	public static LocalDateTime dateToLocalDateTime(Date date){
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	}
+	public static LocalDate dateToLocalDate(Date date){
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+	public static LocalTime dateToLocalTime(Date date){
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+	}
+	/**
 	 * 获取当前时间戳
 	 * @return
 	 */
 	public static long currentTimeMillis(){
 		return Instant.now().toEpochMilli();
+	}
+	/**
+	 * 计算两个<code>LocalDateTime</code>对象之间的时间差
+	 * @param ldt1
+	 * @param ldt2
+	 * @return <code>Duration</code>对象
+	 */
+	public static Duration timeDifference(LocalDateTime ldt1, LocalDateTime ldt2){
+		return Duration.between(ldt1, ldt2);
+	}
+	/**
+	 * 计算两个<code>LocalDateTime</code>对象之间的时间差
+	 * @param ldt1
+	 * @param ldt2
+	 * @return 时间差, 单位毫秒
+	 */
+	public static long timeDifferenceMills(LocalDateTime ldt1, LocalDateTime ldt2){
+		return timeDifference(ldt1, ldt2).toMillis();
 	}
 }

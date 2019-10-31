@@ -222,7 +222,7 @@ public final class Other {
     	File[] files = File.listRoots();
     	for(int i=0; i<files.length; i++){
     		if(disks == null || disks.isEmpty());
-    		else if(!disks.equals(files[i].getName()))
+    		else if(!disks.contains(files[i].getName()))
     			continue;
     		eachDisk = new HashMap<String,String>();
     		eachDisk.put("TotalSpace", FormatFileSize(files[i].getTotalSpace(), sizeUnit));
@@ -249,5 +249,38 @@ public final class Other {
          if(sizeUnit.equals(SizeUnit.GB))
         	 return df.format(fileSize / ONE_GB);
          return df.format(fileSize / ONE_TB);
+    }
+    
+    /**
+     * 合并两个数组
+     * @param first 第一个数组
+     * @param firstStart 第一个数组待复制的起始位置
+     * @param firstLength 第一个数组需要复制的长度
+     * @param second 第二个数组
+     * @param secondStart 第二个数组待复制的起始位置
+     * @param secondLength 第二个数组需要复制的长度
+     * @return int[] 合并后的新数组
+     */
+    public static int[] merge(int[] first, int firstStart, int firstLength, int[] second, int secondStart, int secondLength){
+    	int[] result = new int[firstLength + secondLength];
+    	System.arraycopy(first, firstStart, result, 0, firstLength);
+    	System.arraycopy(second, secondStart, result, firstLength, secondLength);
+    	return result;
+    }
+    /**
+     * 合并两个数组
+     * @param first
+     * @param firstStart
+     * @param firstLength
+     * @param second
+     * @param secondStart
+     * @param secondLength
+     * @return
+     */
+    public static double[] merge(double[] first, int firstStart, int firstLength, double[] second, int secondStart, int secondLength){
+    	double[] result = new double[firstLength + secondLength];
+    	System.arraycopy(first, firstStart, result, 0, firstLength);
+    	System.arraycopy(second, secondStart, result, firstLength, secondLength);
+    	return result;
     }
 }

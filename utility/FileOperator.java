@@ -84,7 +84,7 @@ public final class FileOperator {
 				otherParameters.get(RW_BUFFER_SIZE) != null && !"".equals(otherParameters.get(RW_BUFFER_SIZE).trim()))
 			bufferSize = Integer.valueOf(otherParameters.get(RW_BUFFER_SIZE));
 		if(bufferSize <= 0 || bufferSize > 1024)
-			bufferSize = 32;
+			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
 		StringBuilder stringBuilder = new StringBuilder();
 		boolean doNotAppendLineSeparator = false;

@@ -150,18 +150,17 @@ public final class MapOperator {
 	}
 	
 	/**
-	 * 安全获取map中的指定key的value<br>
-	 * ① map以及key, 二者任意一个是空或空串, 直接返回null;<br>
-	 * ② map不包含key, 直接返回null;<br>
+	 * 安全获取map中的value
 	 * @param map
 	 * @param key
-	 * @return
+	 * @param resultWhenICannotGetValue 当获取指定value失败时的返回值, 此值由使用者决定
+	 * @return T
 	 */
-	public static <T> T safetyGet(Map<String, T> map, String key){
+	public static <T> T safetyGet(Map<String, T> map, String key, T resultWhenICannotGetValue){
 		if(map == null || map.isEmpty() || map.size() == 0 || key == null || "".equals(key.trim()))
-			return null;
+			return resultWhenICannotGetValue;
 		if(!map.containsKey(key))
-			return null;
+			return resultWhenICannotGetValue;
 		return map.get(key);
 	}
 	/**
@@ -196,5 +195,38 @@ public final class MapOperator {
 		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
 		return new FiveTuple<Entry<String, T>, Entry<String, T>, Double, Double, Double>(
 				maxValueAndKey, minValueAndKey, sumOfEachItem, expectation, variance);
+	}
+	/**
+	 * 自定义排序
+	 * @param map 待排序的map
+	 * @param comparator 比较器
+	 * @return LinkedHashMap&ltString, Double&gt
+	 */
+	public static <T> LinkedHashMap<String, Object> customSort(Map<String, T> map, Comparator<Entry<String, T>> comparator){
+		ArrayList<Map.Entry<String, T>> list = new ArrayList<Map.Entry<String, T>>(map.entrySet());
+		Collections.sort(list, comparator);
+		LinkedHashMap<String, Object> newMap = new LinkedHashMap<String, Object>();
+		for(int i=list.size()-1; i>=0; i--)
+			newMap.put(list.get(i).getKey(), list.get(i).getValue());
+        return newMap;  
+	}
+	/**
+	 * (浅拷贝)合并两个map成为一个新的, 不破坏原有map
+	 * @param first
+	 * @param second
+	 * @return
+	 */
+	public static Map<String, Integer> merge(Map<String, Integer> first, Map<String, Integer> second){
+		Map<String, Integer> result = new HashMap<String, Integer>();
+		for(Entry<String, Integer> e: first.entrySet())
+			result.put(e.getKey(), e.getValue());
+		for(Entry<String, Integer> e: second.entrySet()){
+			if(result.containsKey(e.getKey())){
+				result.put(e.getKey(), result.get(e.getKey())+second.get(e.getKey()));
+				continue;
+			}
+			result.put(e.getKey(), e.getValue());
+		}
+		return result;
 	}
 }
