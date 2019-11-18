@@ -1,29 +1,30 @@
 package utility;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class Point {
 	private int x;
 	private int y;
 	private int z;
+	private Object value;
 	
 	public Point(){
 		this.x = 0;
 		this.y = 0;
 		this.z = 0;
 	}
-	public Point(int x){
+	public Point(int x, Object value){
 		this.x = x;
 		this.y = 0;
 		this.z = 0;
+		this.value = value;
 	}
-	public Point(int x, int y){
-		this(x);
+	public Point(int x, int y, Object value){
+		this(x, value);
 		this.y = y;
 	}
-	public Point(int x, int y, int z){
-		this(x, y);
+	public Point(int x, int y, int z, Object value){
+		this(x, y, value);
 		this.z = z;
 	}
 	public int x(){
@@ -35,17 +36,24 @@ public class Point {
 	public int z(){
 		return this.z;
 	}
-	public int setx(int x){
+	public Object value(){
+		return this.value;
+	}
+	public Point setx(int x){
 		this.x = x;
-		return this.x;
+		return this;
 	}
-	public int sety(int y){
+	public Point sety(int y){
 		this.y = y;
-		return this.y;
+		return this;
 	}
-	public int setz(int z){
+	public Point setz(int z){
 		this.z = z;
-		return this.z;
+		return this;
+	}
+	public Point setValue(Object value){
+		this.value = value;
+		return this;
 	}
 	@Override
 	public int hashCode(){
@@ -67,7 +75,7 @@ public class Point {
 	
 	private final static Generator<Point> pointGenerator = new Generator<Point>(){
 		@Override
-		public Point next(Map<String, String> options) {
+		public Point next() {
 			return new Point();
 		}
 	};

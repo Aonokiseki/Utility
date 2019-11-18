@@ -40,13 +40,35 @@ public final class Other {
 	    return methodName;
     }
     /**
-     * 序列倒置
-     * @param array 待处理序列
+     * 序列指定两端倒置
+     * @param array
+     * @param left
+     * @param right
      */
-    public static <T> void sequenceInversion(T[] array){
-    	int i = -1;
-    	int j = array.length;
-    	T temp;
+    public static void sequenceInverSion(double[] array, int left, int right){
+    	if(left < 0 || right > array.length-1 || left >= right)
+    		return;
+    	int i = left;
+    	int j = right;
+    	double temp;
+    	while(i++<j--){
+    		temp = array[i];
+    		array[i] = array[j];
+    		array[j] = temp;
+    	}
+    }
+    /**
+     * 序列指定两端倒置
+     * @param array
+     * @param left
+     * @param right
+     */
+    public static void sequenceInversion(int[] array, int left, int right){
+    	if(left < 0 || right > array.length-1 || left >= right)
+    		return;
+    	int i = left;
+    	int j = right;
+    	int temp;
     	while(i++<j--){
     		temp = array[i];
     		array[i] = array[j];

@@ -216,19 +216,30 @@ public final class FileOperator {
 		fileInputStream.close();
 		return properties;
 	}
+	
+	/**
+	 * 内部接口, 对遍历中的单个文件的处理
+	 * @author zhaoyang
+	 *
+	 */
+	public interface IExecuter{
+		/**
+		 * 处理遍历中的单个文件
+		 * @param file
+		 * @return boolean
+		 */
+		boolean execute(File file);
+	}
 	/**
 	 * 按照指定规则遍历文件
-	 * 
 	 * @param inputFilePath 搜索起点,可以是文件也可以是目录;如果是目录则会遍历该目录下的所有子文件
 	 * @param pattern 正则表达式编译后的模式, 此参数禁止为空
 	 * @param isContainsDirectory 是否包含目录,false-不保存|true-保存, 默认false,即不保存
-	 * @param options 保留参数, 目前没有使用
+	 * @param iExecuter 内部接口, 仅含有一个方法execute(File file) 用于处理遍历中的单个文件
 	 * @return <code>List&ltFile&gt</code>, 每个元素为符合要求的文件(和目录)
 	 * @throws IOException
 	 */
-	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, Map<String,String> options) throws IOException{
-		if(pattern == null)
-			throw new NullPointerException("pattern is null.");
+	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, IExecuter iExecuter, Map<String,String> options) throws IOException{
 		File filePointer = new File(inputFilePath);
 		if(!filePointer.exists())
 			throw new IOException(inputFilePath + " is not exist! Please check your path.");
@@ -240,16 +251,9 @@ public final class FileOperator {
 		while(!fileQueue.isEmpty()){
 			currentFile = fileQueue.remove(0);
 			if(currentFile.isFile()){
-				/*
-				 * Q: 为什么两个if语句不合并?
-				 * 
-				 * A: 因为只要当前文件类型是File而不是Direcotry时, 都会截断。
-				 * 
-				 * 但只有符合匹配规则的File才会加入将要返回的列表中。
-				 */
-				if(pattern.matcher(currentFile.getName()).find()){
+				if(pattern.matcher(currentFile.getName()).find() && iExecuter.execute(currentFile)){
 					files.add(currentFile);
-				}	
+				}
 				continue;
 			}
 			if(isContainsDirectory)
@@ -269,6 +273,24 @@ public final class FileOperator {
 				fileQueue.add(f);
 		}
 		return files;
+	}
+	
+	/**
+	 * 按照指定规则遍历文件
+	 * 
+	 * @param inputFilePath 搜索起点,可以是文件也可以是目录;如果是目录则会遍历该目录下的所有子文件
+	 * @param pattern 正则表达式编译后的模式, 此参数禁止为空
+	 * @param isContainsDirectory 是否包含目录,false-不保存|true-保存, 默认false,即不保存
+	 * @param options 保留参数, 目前没有使用
+	 * @return <code>List&ltFile&gt</code>, 每个元素为符合要求的文件(和目录)
+	 * @throws IOException
+	 */
+	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, Map<String,String> options) throws IOException{
+		return traversal(inputFilePath, pattern, isContainsDirectory, new IExecuter(){
+			@Override
+			public boolean execute(File file) {
+				return true;
+			}}, options);
 	}
 	/**
 	 * 遍历指定拓展名的文件
