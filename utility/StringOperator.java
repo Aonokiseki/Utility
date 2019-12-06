@@ -292,6 +292,12 @@ public final class StringOperator {
     	}
     	return sb.toString();
     }
+    /**
+     * 常用编码名
+     */
+    public final static String UNICODE_BIG_UNMARKED = "UnicodeBigUnmarked";
+    public final static String UTF_8 = "UTF-8";
+    public final static String GBK = "GBK";
     /** 
      * 把字符串由一种编码转换为另一种编码
      *  
@@ -430,13 +436,48 @@ public final class StringOperator {
     	bufferedReader.close();
     	return result;
     }
+    /**
+     * 接口, 用于单行文本处理
+     * @author zhaoyang
+     *
+     */
+    public interface ILineExecuter{
+    	/**
+    	 * 处理单行文本, 允许返回null
+    	 * @param str
+    	 * @return
+    	 */
+    	public String execute(String str);
+    }
+    /**
+     * 将一串文本按行读取, 然后将每一行文本当做列表的每一行, 最后返回列表
+     * @param str 源文本
+     * @param iLineExecuter ILineExecuter接口的实现, 如果execute()方法返回为null, 则不会把此行文本加入到列表中
+     * @return List&ltString&gt 文本列表 
+     * @throws IOException
+     */
+    public static List<String> asLines(String str, ILineExecuter iLineExecuter) throws IOException{
+    	List<String> result = new ArrayList<String>();
+    	if(str == null || str.isEmpty())
+    		return result;
+    	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8")));
+    	String current;
+    	while((current = bufferedReader.readLine())!=null){
+    		current = iLineExecuter.execute(current);
+    		if(current == null)
+    			continue;
+    		result.add(current);
+    	}
+    	bufferedReader.close();
+    	return result;
+    }
     
     private final static String UP_LEFT = "UP_LEFT";
     private final static String UP = "UP";
     private final static String LEFT = "LEFT";
     
     /**
-	 * 最长公共子序列
+	 * 最长公共子序 列
 	 * @param str1
 	 * @param str2
 	 * @param options 
@@ -520,5 +561,49 @@ public final class StringOperator {
 		LcsStructure lcsStructure = new LcsStructure();
 		lcsStructure.output(lcsPath, str1AsArray, str1AsArray.length-1, str2AsArray.length-1);
 		return lcsStructure.toString();
+	}
+	
+	/* ANSII的编码最大为256 */
+	private final static int TOP_OF_ANSII = 256;
+	
+	/**
+	 * KMP算法
+	 * @param text 文本串
+ 	 * @param pattern 模式串
+	 * @return 若匹配成功, 返回匹配的首位置; 失败, 返回-1
+	 */
+	public static int kmp(String text, String pattern){
+		/*  确定有限状态机(Deterministic Finite Automation)
+		 *  表示的含义为 dfa[当前状态][将要遇到的字符] = 下个状态 
+		 *  当前状态一共有(模式串长度+1)种,但是下标由0开始计
+		 *  因此pattern.length即可表示全部状态长度
+		 *  
+		 *  例如pattern为abac, 则有 0 ~ 4 共计5个状态.
+		 *  遍历完文本串以后, 只要状态推进到4, 就算匹配完成
+		 *     a     b     a     c
+		 *  0 --- 1 --- 2 --- 3 --- 4 */
+		int[][] dfa = new int[pattern.length()][TOP_OF_ANSII];
+		/* 0号状态遇到了模式串的第一个字符一定要进入1号状态 */
+		dfa[0][pattern.charAt(0)] = 1;
+		/* prevState 这个变量记录当前状态的前一个状态。
+		 * 其状态跟随当前状态推进; 当当前状态重启(下标回溯)时, 先退回到 prevState*/
+		int prevState = 0;
+		/* 构造确定有限状态机 */
+		for(int j=1, length=pattern.length(); j<length; j++){
+			for(int character = 0; character < TOP_OF_ANSII; character++){
+				dfa[j][character] = dfa[prevState][character];
+			}
+			dfa[j][pattern.charAt(j)] = j + 1;
+			prevState = dfa[prevState][pattern.charAt(j)];
+		}
+		/* 开始搜索, 变量j为 即将到达的状态*/
+		int j = 0;
+		for(int i=0,length=text.length(); i<length; i++){
+			/* 在文本串中遍历将要匹配的字符, 决定状态推进(j变大), 或状态重启(j变小)*/
+			j = dfa[j][text.charAt(i)];
+			if(j == pattern.length())
+				return i - pattern.length() + 1;
+		}
+		return -1;
 	}
 }

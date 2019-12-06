@@ -133,7 +133,7 @@ public final class FileOperator {
 	 * @throws IOException
 	 */
 	public static List<Byte> toBinaryArray(String sourceFileAbsolutePath) throws IOException{
-		List<Byte> bytes = new ArrayList<Byte>();
+		List<Byte> bytes = new LinkedList<Byte>();
 		InputStream in = new FileInputStream(sourceFileAbsolutePath);
 		int tempByte = Integer.MIN_VALUE;
 		while((tempByte = in.read())!= -1)
@@ -251,9 +251,8 @@ public final class FileOperator {
 		while(!fileQueue.isEmpty()){
 			currentFile = fileQueue.remove(0);
 			if(currentFile.isFile()){
-				if(pattern.matcher(currentFile.getName()).find() && iExecuter.execute(currentFile)){
+				if(pattern.matcher(currentFile.getName()).find() && iExecuter.execute(currentFile))
 					files.add(currentFile);
-				}
 				continue;
 			}
 			if(isContainsDirectory)

@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
@@ -138,12 +140,35 @@ public class ChronoOperator {
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
 	}
 	/**
+	 * <code>Calendar</code> 转换为<code>LocalDateTime</code>
+	 * @param calendar
+	 * @return
+	 */
+	public static LocalDateTime calendarToLocalDateTime(Calendar calendar){
+		return dateToLocalDateTime(calendar.getTime());
+	}
+	public static LocalDate calendarToLocalDate(Calendar calendar){
+		return dateToLocalDate(calendar.getTime());
+	}
+	public static LocalTime calendarToLocalTime(Calendar calendar){
+		return dateToLocalTime(calendar.getTime());
+	}
+	/**
 	 * 获取当前时间戳
 	 * @return
 	 */
 	public static long currentTimeMillis(){
 		return Instant.now().toEpochMilli();
 	}
+	/**
+	 * 时间戳转换为<code>LocalDateTime</code>, 精度为秒
+	 * @param timeMillis
+	 * @return
+	 */
+	public static LocalDateTime timeMillisToLocalDateTime(long timeMillis){
+		return LocalDateTime.ofEpochSecond(timeMillis/1000, 0, ZoneOffset.ofHours(8));
+	}
+	
 	/**
 	 * 计算两个<code>LocalDateTime</code>对象之间的时间差
 	 * @param ldt1

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+
 public class BinaryTreeOperator {
 	/**
 	 * 二叉树节点的接口
