@@ -2,28 +2,28 @@ package utility;
 
 import java.util.Objects;
 
-public class Point {
+public class Point<T> {
 	private int x;
 	private int y;
 	private int z;
-	private Object value;
+	private T value;
 	
 	public Point(){
 		this.x = 0;
 		this.y = 0;
 		this.z = 0;
 	}
-	public Point(int x, Object value){
+	public Point(int x, T value){
 		this.x = x;
 		this.y = 0;
 		this.z = 0;
 		this.value = value;
 	}
-	public Point(int x, int y, Object value){
+	public Point(int x, int y, T value){
 		this(x, value);
 		this.y = y;
 	}
-	public Point(int x, int y, int z, Object value){
+	public Point(int x, int y, int z, T value){
 		this(x, y, value);
 		this.z = z;
 	}
@@ -36,22 +36,22 @@ public class Point {
 	public int z(){
 		return this.z;
 	}
-	public Object value(){
+	public T value(){
 		return this.value;
 	}
-	public Point setx(int x){
+	public Point<T> setx(int x){
 		this.x = x;
 		return this;
 	}
-	public Point sety(int y){
+	public Point<T> sety(int y){
 		this.y = y;
 		return this;
 	}
-	public Point setz(int z){
+	public Point<T> setz(int z){
 		this.z = z;
 		return this;
 	}
-	public Point setValue(Object value){
+	public Point<T> setValue(T value){
 		this.value = value;
 		return this;
 	}
@@ -63,23 +63,13 @@ public class Point {
 	public boolean equals(Object o){
 		if(o == this)
 			return true;
-		if(! (o instanceof Point))
+		if(! (o instanceof Point<?>))
 			return false;
-		Point point = (Point) o;
+		Point<?> point = (Point<?>) o;
 		return (this.x == point.x && this.y == point.y && this.z == point.z);
 	}
 	@Override
 	public String toString(){
 		return "("+this.x+", "+this.y+", "+this.z+")";
-	}
-	
-	private final static Generator<Point> pointGenerator = new Generator<Point>(){
-		@Override
-		public Point next() {
-			return new Point();
-		}
-	};
-	public static Generator<Point> generator(){
-		return pointGenerator;
 	}
 }
