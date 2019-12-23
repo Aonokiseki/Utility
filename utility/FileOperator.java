@@ -50,7 +50,7 @@ public final class FileOperator {
 	 * @throws IOException 源文件不在指定路径下
 	 */
 	public static String read(String sourceFileAbsolutePath)throws IOException{
-		return read(sourceFileAbsolutePath, null, new HashMap<String,String>());
+		return read(sourceFileAbsolutePath, null, null);
 	}
 	/**
 	 * 以指定的编码方式读文件
@@ -61,40 +61,85 @@ public final class FileOperator {
 	 * @throws IOException 源文件不在指定路径下
 	 */
 	public static String read(String sourceFileAbsolutePath, String encoding)throws IOException{
-		return read(sourceFileAbsolutePath, encoding, new HashMap<String,String>());
+		return read(sourceFileAbsolutePath, encoding, null);
 	}
 	/**
 	 * 以指定的编码方式读文件
 	 * 
 	 * @param sourceFileAbsolutePath 源文件的绝对路径
 	 * @param encoding 以该参数保存的编码读文件
-	 * @param otherParameters 保留参数,待后续添加<br>
+	 * @param options 额外参数<br>
 	 * <code>not.append.lineserparator</code> 每行后方是否追加换行符, true-不追加|false-追加, 默认false<br>
 	 * <code>rw.buffer.size</code> 缓冲区大小, 范围[1, 1024], 单位MB, 默认32M, 值非法时取默认值.
 	 * @return String 文件中的字符串
 	 * @throws IOException 源文件不在指定路径下
 	 */
-	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>otherParameters) throws IOException{
+	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>options) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		if(encoding == null || "".equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		int bufferSize = DEFAULT_BUFFER_SIZE;
-		if(otherParameters != null && otherParameters.containsKey(RW_BUFFER_SIZE) && 
-				otherParameters.get(RW_BUFFER_SIZE) != null && !"".equals(otherParameters.get(RW_BUFFER_SIZE).trim()))
-			bufferSize = Integer.valueOf(otherParameters.get(RW_BUFFER_SIZE));
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
 		if(bufferSize <= 0 || bufferSize > 1024)
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
 		StringBuilder stringBuilder = new StringBuilder();
-		boolean doNotAppendLineSeparator = false;
-		if(otherParameters != null && otherParameters.containsKey(NOT_APPEND_LINESEPARATOR))
-			doNotAppendLineSeparator = Boolean.valueOf(otherParameters.get(NOT_APPEND_LINESEPARATOR));
+		boolean doNotAppendLineSeparator = Boolean.valueOf(MapOperator.safetyGet(options, NOT_APPEND_LINESEPARATOR, "false"));
 		String currentLineText = null;
 		while((currentLineText = bufferedReader.readLine()) != null){
 			stringBuilder.append(currentLineText);
 			if(!doNotAppendLineSeparator)
 				stringBuilder.append(System.lineSeparator());
+		}
+		bufferedReader.close();
+		return stringBuilder.toString();
+	}
+
+	public interface ILineExecutor {
+		/**
+		 * 单行文本过滤器,过滤时仅以此方法的返回值作为依据;<br>
+		 * 空串等特殊情况是否保留需要用户自行判断;
+		 * @param currentLine
+		 * @return
+		 */
+		boolean accept(String currentLine);
+		/**
+		 * 对过滤后的单行文本的处理, 由用户实现; 
+		 * 如果返回null, 不会添加此行;
+		 * 换行符需要用户自行添加
+		 * @param currentLine
+		 * @return
+		 */
+		String process(String currentLine);
+	}
+	/**
+	 * 以指定规则读取文件
+	 * @param sourceFileAbsolutePath 源文件的绝对路径
+	 * @param encoding 以该参数保存的编码读文件
+	 * @param iLineExecutor 接口, 指明如何处理单行文本
+	 * @param options 选项, 目前有<br>
+	 * <code>rw.buffer.size</code> 缓冲区大小, 范围[1, 1024], 单位MB, 默认32M, 值非法时取默认值.
+	 * @return String 文件中的字符串
+	 * @throws IOException
+	 */
+	public static String read(String sourceFileAbsolutePath, String encoding, ILineExecutor iLineExecutor, Map<String,String> options) throws IOException {
+		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
+		if(encoding == null || "".equals(encoding.trim()))
+			encoding = DEFAULT_ENCODING;
+		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		if(bufferSize <= 0 || bufferSize > 1024)
+			bufferSize = DEFAULT_BUFFER_SIZE;
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
+		StringBuilder stringBuilder = new StringBuilder();
+		String currentLineText = null;
+		while((currentLineText = bufferedReader.readLine()) != null){
+			if(!iLineExecutor.accept(currentLineText))
+				continue;
+			currentLineText = iLineExecutor.process(currentLineText);
+			if(currentLineText == null)
+				continue;
+			stringBuilder.append(currentLineText);
 		}
 		bufferedReader.close();
 		return stringBuilder.toString();
@@ -105,26 +150,56 @@ public final class FileOperator {
 	 * 
 	 * @param sourceFileAbsolutePath 源文件绝对路径
 	 * @param encoding 以该编码读取文件
-	 * @param otherParameters 保留参数,待后续添加
 	 * @return <code>List&ltString&gt</code>, 列表方式保存的文件
 	 * @throws IOException 源文件不在指定路径下
 	 */
-	public static List<String> readAsList(String sourceFileAbsolutePath, String encoding, Map<String,String>otherParameters)throws IOException{
+	public static LinkedList<String> readAsList(String sourceFileAbsolutePath, String encoding)throws IOException{
+		return readAsList(sourceFileAbsolutePath, encoding, new ILineExecutor(){
+				@Override
+				public boolean accept(String currentLine) {
+					if(currentLine.isEmpty())
+						return false;
+					return true;
+				}
+				@Override
+				public String process(String currentLine) {
+					return currentLine;
+				}
+			}, null);
+	}
+	/**
+	 * 以指定编码, 按照列表方式读取文件
+	 * @param sourceFileAbsolutePath 源文件绝对路径
+	 * @param encoding 以该编码读取文件
+	 * @param iLineExecutor 接口, 指出如何过滤并处理单行
+	 * @param options 参数<br>
+	 * <code>rw.buffer.size</code> 缓冲区大小, 范围[1, 1024], 单位MB, 默认32M, 值非法时取默认值.
+	 * @return LinkedList 文本列表, 每个元素对应文本的一行
+	 * @throws IOException
+	 */
+	public static LinkedList<String> readAsList(String sourceFileAbsolutePath, String encoding, ILineExecutor iLineExecutor, Map<String,String> options) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		if(encoding == null || "".equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, DEFAULT_BUFFER_SIZE * ONE_MIB);
-		List<String> contentList = new ArrayList<String>();
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		if(bufferSize <= 0 || bufferSize > 1024)
+			bufferSize = DEFAULT_BUFFER_SIZE;
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
+		LinkedList<String> contentList = new LinkedList<String>();
 		String currentLineText = null;
 		while((currentLineText = bufferedReader.readLine()) != null){
-			if(currentLineText.isEmpty() || "".equals(currentLineText.trim()) || currentLineText.length() == 0)
+			if(!iLineExecutor.accept(currentLineText))
+				continue;
+			currentLineText = iLineExecutor.process(currentLineText);
+			if(currentLineText == null)
 				continue;
 			contentList.add(currentLineText);
 		}
 		bufferedReader.close();
 		return contentList;
 	}
+	
 	/**
 	 * 以二进制方式读取文件(文件不能超过2GB)
 	 * 
@@ -150,7 +225,7 @@ public final class FileOperator {
 	 * 
 	 */
 	public static void write(String targetSavingPath, String text) throws IOException{
-		write(targetSavingPath, text, null, new HashMap<String,String>());
+		write(targetSavingPath, text, null, null);
 	}
 	/**
 	 * 以指定编码方式写文件
@@ -162,7 +237,7 @@ public final class FileOperator {
 	 * 
 	 */
 	public static void write(String targetSavingPath, String text, String encoding) throws IOException{
-		write(targetSavingPath, text, encoding, new HashMap<String,String>());
+		write(targetSavingPath, text, encoding, null);
 	}
 	/**
 	 * 以指定编码方式写文件
@@ -170,21 +245,18 @@ public final class FileOperator {
 	 * @param targetSavingPath 文件的输出绝对路径
 	 * @param text 输出文本
 	 * @param encoding 编码方式
-	 * @param otherParameters 其它参数, 目前:<br>
+	 * @param options 其它参数, 目前:<br>
 	 * <code>is.append.contents</code> 是否追加内容到末尾,true/false,默认false,不追加;空值视为false.<br>
 	 * 注意追加文本需要自行调整文本格式.<br>
 	 * <code>rw.buffer.size</code> 缓冲区大小, 范围[1, 1024], 单位MB, 默认32M, 值非法时取默认值.
 	 * @throws IOException 路径不存在
 	 * 
 	 */
-	public static void write(String targetSavingPath, String text, String encoding, Map<String,String>otherParameters) throws IOException{
-		boolean isAppend = false;
-		if(otherParameters != null && !otherParameters.isEmpty() && otherParameters.get(IS_APPEND_CONTENTS) != null)
-			isAppend = Boolean.valueOf(otherParameters.get(IS_APPEND_CONTENTS).trim());
-		int bufferSize = DEFAULT_BUFFER_SIZE;
-		if(otherParameters != null && otherParameters.containsKey(RW_BUFFER_SIZE) && 
-				otherParameters.get(RW_BUFFER_SIZE) != null && !"".equals(otherParameters.get(RW_BUFFER_SIZE).trim()))
-			bufferSize = Integer.valueOf(otherParameters.get(RW_BUFFER_SIZE));
+	public static void write(String targetSavingPath, String text, String encoding, Map<String,String> options) throws IOException{
+		boolean isAppend = Boolean.valueOf(MapOperator.safetyGet(options, IS_APPEND_CONTENTS, "false"));
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		if(bufferSize <= 0 || bufferSize > 1024)
+			bufferSize = DEFAULT_BUFFER_SIZE;
 		FileOutputStream fileOutputStream = new FileOutputStream(targetSavingPath, isAppend);
 		if(encoding == null || "".equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
