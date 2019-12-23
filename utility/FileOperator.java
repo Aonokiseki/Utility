@@ -27,6 +27,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import utility.StringOperator.ILineExecutor;
+
 public final class FileOperator {
 	
 	/*默认缓冲区大小被我调整成了 32MB */
@@ -94,24 +96,7 @@ public final class FileOperator {
 		bufferedReader.close();
 		return stringBuilder.toString();
 	}
-
-	public interface ILineExecutor {
-		/**
-		 * 单行文本过滤器,过滤时仅以此方法的返回值作为依据;<br>
-		 * 空串等特殊情况是否保留需要用户自行判断;
-		 * @param currentLine
-		 * @return
-		 */
-		boolean accept(String currentLine);
-		/**
-		 * 对过滤后的单行文本的处理, 由用户实现; 
-		 * 如果返回null, 不会添加此行;
-		 * 换行符需要用户自行添加
-		 * @param currentLine
-		 * @return
-		 */
-		String process(String currentLine);
-	}
+	
 	/**
 	 * 以指定规则读取文件
 	 * @param sourceFileAbsolutePath 源文件的绝对路径

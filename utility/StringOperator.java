@@ -410,60 +410,73 @@ public final class StringOperator {
     }
     
     private final static String CONTAINS_SPACE_LINE = "contains.space.line";
+    private final static String DEFAULT_ENCODING = "UTF-8";
     /**
      * 将一串文本按行读取, 然后将每一行文本当做列表的每一行, 最后返回列表
      * @param str 源文本
+     * @param encoding 编码
      * @param param 可选参数<br>
      * <b><code>contains.space.line</code></b> 是否保留空行 true-是|false-否, 默认false
      * @return <code>&ltList&gt</code> 文本列表
      * @throws IOException 读取文本串发生错误时
      */
-    public static List<String> asLines(String str, Map<String,String> param)throws IOException{
-    	List<String> result = new ArrayList<String>();
+    public static LinkedList<String> asLines(String str, String encoding, Map<String,String> param)throws IOException{
+    	LinkedList<String> result = new LinkedList<String>();
     	if(str == null || str.isEmpty())
     		return result;
-    	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8")));
+    	if(encoding == null || "".equals(encoding))
+    		encoding = DEFAULT_ENCODING;
+    	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName(encoding))), Charset.forName(encoding)));
     	String current;
+    	boolean containsSpaceLine = Boolean.valueOf(MapOperator.safetyGet(param, CONTAINS_SPACE_LINE, "false"));
     	while((current = bufferedReader.readLine())!=null){
-    		if(param == null || param.isEmpty()){
+    		if(current.isEmpty() && containsSpaceLine){
     			result.add(current);
     			continue;
     		}
-    		if(param.containsKey(CONTAINS_SPACE_LINE) && Boolean.valueOf(param.get(CONTAINS_SPACE_LINE)).booleanValue() == true && current.isEmpty())
-    			continue;
     		result.add(current.trim());
     	}
     	bufferedReader.close();
     	return result;
     }
-    /**
-     * 接口, 用于单行文本处理
-     * @author zhaoyang
-     *
-     */
-    public interface ILineExecuter{
-    	/**
-    	 * 处理单行文本, 允许返回null
-    	 * @param str
-    	 * @return
-    	 */
-    	public String execute(String str);
-    }
+    
+    public interface ILineExecutor {
+		/**
+		 * 单行文本过滤器,过滤时仅以此方法的返回值作为依据;<br>
+		 * 空串等特殊情况是否保留需要用户自行判断;
+		 * @param currentLine
+		 * @return
+		 */
+		boolean accept(String currentLine);
+		/**
+		 * 对过滤后的单行文本的处理, 由用户实现; 
+		 * 如果返回null, 不会添加此行;
+		 * 换行符需要用户自行添加
+		 * @param currentLine
+		 * @return
+		 */
+		String process(String currentLine);
+	}
     /**
      * 将一串文本按行读取, 然后将每一行文本当做列表的每一行, 最后返回列表
      * @param str 源文本
-     * @param iLineExecuter ILineExecuter接口的实现, 如果execute()方法返回为null, 则不会把此行文本加入到列表中
+     * @param encoding 编码
+     * @param iLineExecuter ILineExecuter接口的实现
      * @return List&ltString&gt 文本列表 
      * @throws IOException
      */
-    public static List<String> asLines(String str, ILineExecuter iLineExecuter) throws IOException{
-    	List<String> result = new ArrayList<String>();
+    public static LinkedList<String> asLines(String str, String encoding, ILineExecutor iLineExecutor) throws IOException{
+    	LinkedList<String> result = new LinkedList<String>();
     	if(str == null || str.isEmpty())
     		return result;
-    	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8")));
+    	if(encoding == null || "".equals(encoding.trim()))
+    		encoding = DEFAULT_ENCODING;
+    	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName(encoding))), Charset.forName(encoding)));
     	String current;
     	while((current = bufferedReader.readLine())!=null){
-    		current = iLineExecuter.execute(current);
+    		if(!iLineExecutor.accept(current))
+    			continue;
+    		current = iLineExecutor.process(current);
     		if(current == null)
     			continue;
     		result.add(current);
