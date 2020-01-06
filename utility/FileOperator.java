@@ -33,7 +33,11 @@ public final class FileOperator {
 	
 	/*默认缓冲区大小被我调整成了 32MB */
 	private static final int DEFAULT_BUFFER_SIZE = 32 /*MiB*/;
-	private static final int ONE_MIB = /* 1024 * 1024 bytes = */ 1048576 /*bytes*/;
+	@SuppressWarnings("unused")
+	private static final int ONE_KIB = /* 1024 bytes = */ 1024 /* bytes */;
+	private static final int ONE_MIB = /* 1024 * 1024 bytes = */ 1048576 /* bytes */;
+	@SuppressWarnings("unused")
+	private static final int ONE_GIB = /* 1024 * 1024 * 1024 bytes = */ 1073741824 /* bytes */;
 	private static final String IS_APPEND_CONTENTS = "is.append.contents";
 	private static final String FILE_SEPARATOR = "file.separator";
 	private static final String CUT_PARENT_PATH = "cut.parent.path";

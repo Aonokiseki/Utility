@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.swing.filechooser.FileSystemView;
 
+
 public final class Other {
 	private Other(){}
 	
@@ -114,11 +115,11 @@ public final class Other {
      * @param maxRadius 
      * @return TwoTuple
      */
-    public static TwoTuple<Double,Double> getRandomCoordinateByCircle(double x, double y, double maxRadius){
+    public static Tuple.Two<Double,Double> getRandomCoordinateByCircle(double x, double y, double maxRadius){
     	double theta = Math.random() * 2 * Math.PI;
     	x = Math.random() * maxRadius * Math.cos(theta) + x;
     	y = Math.random() * maxRadius * Math.sin(theta) + y;
-    	return new TwoTuple<Double, Double>(x, y);
+    	return new Tuple.Two<Double, Double>(x, y);
     }
     /**
      * 返回指定球形范围内的一个坐标<br><br>
@@ -134,13 +135,13 @@ public final class Other {
      * @param maxRadius 
      * @return ThreeTuple
      */
-    public static ThreeTuple<Double,Double,Double> getRandomCoordinateBySphere(double x, double y, double z, double maxRadius){
+    public static Tuple.Three<Double,Double,Double> getRandomCoordinateBySphere(double x, double y, double z, double maxRadius){
     	double theta = Math.random() * 2 * Math.PI;
     	double phi = Math.random() * Math.PI;
     	x = Math.random() * maxRadius * Math.cos(theta) * Math.sin(phi) + x;
     	y = Math.random() * maxRadius * Math.sin(theta) * Math.sin(phi) + y;
         z = Math.random() * maxRadius * Math.cos(phi) + z;
-        return new ThreeTuple<Double, Double, Double>(x, y, z);
+        return new Tuple.Three<Double, Double, Double>(x, y, z);
     }
     /**
      * 返回平面矩形范围内一个随机坐标<br>
@@ -151,10 +152,10 @@ public final class Other {
      * @param width 
      * @return TwoTuple
      */
-    public static TwoTuple<Double,Double> getRandomCoordinateBySquare(double x, double y, double length, double width){
+    public static Tuple.Two<Double,Double> getRandomCoordinateBySquare(double x, double y, double length, double width){
     	double pX = Math.random() * length + x;
     	double pY = Math.random() * width + y;
-    	return new TwoTuple<Double,Double>(pX, pY);
+    	return new Tuple.Two<Double,Double>(pX, pY);
     }
     /**
      * 返回空间范围内的一个随机坐标<br>
@@ -167,11 +168,11 @@ public final class Other {
      * @param heigh 
      * @return ThreeTuple
      */
-    public static ThreeTuple<Double,Double,Double> getRandomCoordinateByCuboid(double x, double y, double z, double length, double width, double heigh){
+    public static Tuple.Three<Double,Double,Double> getRandomCoordinateByCuboid(double x, double y, double z, double length, double width, double heigh){
     	double pX = Math.random() * length + x;
     	double pY = Math.random() * width + y;
     	double pZ = Math.random() * heigh + z;
-    	return new ThreeTuple<Double,Double,Double>(pX, pY, pZ);
+    	return new Tuple.Three<Double,Double,Double>(pX, pY, pZ);
     }
     
     /**

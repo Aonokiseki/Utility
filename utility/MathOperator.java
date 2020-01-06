@@ -11,31 +11,31 @@ public final class MathOperator {
 	private MathOperator(){}
 	/**
 	 * 统计<code>List</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
+	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
 	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
 	 * @param vector 
 	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, sumOfEachItem, expectation, variance)</code>
 	 */
-	public static FiveTuple<Double, Double, Double, Double, Double> statistics(List<? extends Number> vector){
+	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(List<? extends Number> vector){
 		return statistics(vector, 0, vector.size()-1);
 	}
 	/**
 	 * 统计<code>List</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
+	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
 	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
 	 * @param vector
 	 * @param left 指定的左端
 	 * @param right 指定的右端
-	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, sumOfEachItem, expectation, variance)</code><br>
+	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, summary, expectation, variance)</code><br>
 	 * 当left 或 right 指定端点非法时, 返回null<br>
 	 */
-	public static FiveTuple<Double, Double, Double, Double, Double> statistics(List<? extends Number> vector, int left, int right){
+	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(List<? extends Number> vector, int left, int right){
 		if(left < 0 || right >= vector.size() || left > right)
 			return null;
 		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
 		double expectation = 0.0; double variance = 0.0;
 		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
-		double sumOfEachItem = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
+		double summary = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
 		int length = right - left + 1;
 		for(int i=left; i<=right; i++){
 			current = vector.get(i).doubleValue();
@@ -43,14 +43,24 @@ public final class MathOperator {
 				maxValue = current;
 			if(current < minValue)
 				minValue = current;
-			sumOfEachItem+=vector.get(i).doubleValue();
+			summary+=vector.get(i).doubleValue();
 			sumOfSquareOfEachItem+=Math.pow(vector.get(i).doubleValue(), 2.0);
 		}
-		expectation = sumOfEachItem / length;
+		expectation = summary / length;
 		theSquareOfTheExpectation = Math.pow(expectation,2.0);
 		theExpectationOfTheSquare = sumOfSquareOfEachItem/length;
 		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
-		return new FiveTuple<Double, Double, Double, Double, Double>(maxValue, minValue, sumOfEachItem, expectation, variance);
+		return new Tuple.Five<Double, Double, Double, Double, Double>(maxValue, minValue, summary, expectation, variance);
+	}
+	/**
+	 * 统计<code>numbers</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
+	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
+	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
+	 * @param array
+	 * @return
+	 */
+	public static Tuple.Five<Double, Double, Double, Double, Double> simpleStatistics(double... numbers){
+		return statistics(numbers, 0, numbers.length-1);
 	}
 	/**
 	 * 统计<code>array</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
@@ -59,12 +69,12 @@ public final class MathOperator {
 	 * @param array
 	 * @return
 	 */
-	public static FiveTuple<Double, Double, Double, Double, Double> statistics(double[] array){
+	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(double[] array){
 		return statistics(array, 0, array.length-1);
 	}
 	/**
 	 * 统计<code>array</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
+	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
 	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
 	 * @param array
 	 * @param left 指定的左端
@@ -72,13 +82,13 @@ public final class MathOperator {
 	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, sumOfEachItem, expectation, variance)</code><br>
 	 * 当left 或 right 指定端点非法时, 返回null<br>
 	 */
-	public static FiveTuple<Double, Double, Double, Double, Double> statistics(double[] array, int left, int right){
+	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(double[] array, int left, int right){
 		if(left < 0 || right >= array.length || left > right)
 			return null;
 		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
 		double expectation = 0.0; double variance = 0.0;
 		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
-		double sumOfEachItem = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
+		double summary = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
 		int length = right - left + 1;
 		for(int i=left; i<=right; i++){
 			current = array[i];
@@ -86,14 +96,14 @@ public final class MathOperator {
 				maxValue = current;
 			if(current < minValue)
 				minValue = current;
-			sumOfEachItem += array[i];
+			summary += array[i];
 			sumOfSquareOfEachItem += Math.pow(array[i], 2.0);
 		}
-		expectation = sumOfEachItem / length;
+		expectation = summary / length;
 		theSquareOfTheExpectation = Math.pow(expectation, 2.0);
 		theExpectationOfTheSquare = sumOfSquareOfEachItem / length;
 		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
-		return new FiveTuple<Double, Double, Double, Double, Double>(maxValue, minValue, sumOfEachItem, expectation, variance);
+		return new Tuple.Five<Double, Double, Double, Double, Double>(maxValue, minValue, summary, expectation, variance);
 	}
 	
     /**
@@ -104,7 +114,7 @@ public final class MathOperator {
      */
     public static double[] minMaxNormalization(double[] array){
     	double[] result = new double[array.length];
-    	FiveTuple<Double, Double, Double, Double, Double> statistic = statistics(array);
+    	Tuple.Five<Double, Double, Double, Double, Double> statistic = statistics(array);
     	double max = statistic.first.doubleValue();
     	double min = statistic.second.doubleValue();
     	double difference = max - min;
