@@ -97,19 +97,25 @@ public class Kmeans {
 		Vector clusterHeart = null;
 		while(true){
 			for(Vector eachCustomVector:vectors){
+				System.out.println("eachCustomVector=="+eachCustomVector);
 				shortestDistance = Double.MAX_VALUE;
 				for(Entry<Vector, List<Vector>> eachClusterHeart: currentClusterResult.entrySet()){
+					System.out.println("eachClusterHeart=="+eachClusterHeart);
 					minkowskiDistance = MathOperator.minkowskiDistance(
 								eachCustomVector.attributes(),
 								eachClusterHeart.getKey().attributes(), 
 								2);
+					System.out.println("distance=="+minkowskiDistance);
 					if(minkowskiDistance < shortestDistance){
 						shortestDistance = minkowskiDistance;
 						clusterHeart = eachClusterHeart.getKey();
+						System.out.println("shortestDistance = "+shortestDistance+", clusterHeart=="+eachClusterHeart.getKey());
 					}
 				}
 				currentClusterResult.get(clusterHeart).add(eachCustomVector);
+				System.out.println("currentClusterResult.get("+clusterHeart+").add("+eachCustomVector+")");
 			}
+			System.out.println("lastClusterResult=="+lastClusterResult+", currentClusterResult=="+currentClusterResult);
 			if(isEqualResult(lastClusterResult, currentClusterResult)){
 				break;
 			}
@@ -160,7 +166,9 @@ public class Kmeans {
 		int randomIndex = -1;
 		for(int i=0; i<k; i++){
 			randomIndex = (int)(Math.random() * vectors.size());
+			System.out.println("randomIndex=="+randomIndex);
 			firstClusterStatus.put(vectors.get(randomIndex), new ArrayList<Vector>());
+			System.out.println("firstClusterStatus.put("+vectors.get(randomIndex)+"), new ArrayList<Vector>();");
 		}
 		return firstClusterStatus;
 	}

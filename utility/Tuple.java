@@ -68,4 +68,30 @@ public class Tuple {
 			return "("+this.first+", "+this.second+", "+this.third+", "+this.fourth+", "+this.fifth+", "+this.sixth+")";
 		}
 	}
+	/*七元组*/
+	public static class Seven<A, B, C, D, E, F, G> extends Tuple.Six<A, B, C, D, E, F>{
+		public final G seventh;
+		
+		public Seven(A a, B b, C c, D d, E e, F f, G g) {
+			super(a, b, c, d, e, f);
+			this.seventh = g;
+		}
+		@Override
+		public String toString() {
+			return "("+this.first+", "+this.second+", "+this.third+", "+this.fourth+", "+this.fifth+", "+this.sixth+", "+this.seventh+")";
+		}
+	}
+	/*八元组*/
+	public static class Eight<A, B, C, D, E, F, G, H> extends Tuple.Seven<A, B, C, D, E, F, G>{
+		public final H eighth;
+		
+		public Eight(A a, B b, C c, D d, E e, F f, G g, H h) {
+			super(a, b, c, d, e, f, g);
+			this.eighth = h;
+		}
+		@Override
+		public String toString() {
+			return "("+this.first+", "+this.second+", "+this.third+", "+this.fourth+", "+this.fifth+", "+this.sixth+", "+this.seventh+", "+this.eighth+")";
+		}
+	}
 }

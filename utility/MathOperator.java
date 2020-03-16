@@ -1,109 +1,169 @@
 package utility;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Map.Entry;
 import java.util.List;
 
 public final class MathOperator {
 	private MathOperator(){}
-	/**
-	 * 统计<code>List</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
-	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
-	 * @param vector 
-	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, sumOfEachItem, expectation, variance)</code>
-	 */
-	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(List<? extends Number> vector){
-		return statistics(vector, 0, vector.size()-1);
+
+	public static <T extends Number> Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(List<T> vector){
+		return statistics(vector, 0, vector.size());
 	}
 	/**
-	 * 统计<code>List</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
-	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
-	 * @param vector
+	 * 统计<code>List</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(max)</code>，最小值<code>(min)</code>,<br/>
+	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>, 方差<code>(variance)</code>, 中位数<code>(median)</code>和众数<code>(modes)</code><br>
+	 * 并听过七元组<code>FourTuple&ltA,B,C,D,E,F,G&gt</code>返回
+	 * @param <T> 类型参数, 必须是Number的子类
+	 * @param data 待处理列表
+	 * @param left 左端
+	 * @param right 右端(不包含此位置)
+	 * @return <code>Tuple.Seventh&lt&gt(max, min, summary, expectation, variance, median, modes)</code><br>
+	 * 当 left 或 right 指定端点非法时, 返回null<br>
+	 */
+	public static <T extends Number> Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(
+			List<T> data, int left, int right){
+		if(data == null || data.isEmpty())
+			return null;
+		if(left > right || left < 0 || left > data.size() || right < 0 || right > data.size())
+			return null;
+		List<T> list = data.subList(left, right);
+		Collections.sort(list, new Comparator<T>(){
+			@Override
+			public int compare(T value1, T value2) {
+				if(value1.doubleValue() - value2.doubleValue() > 0)
+					return 1;
+				if(value1.doubleValue() - value2.doubleValue() < 0)
+					return -1;
+				return 0;
+			}
+		});
+		int size = list.size();
+		/*中位数*/
+		double median = 0.0;
+		if(size < 2)
+			median = list.get(0).doubleValue();
+		if(size % 2 == 0)
+			median = (list.get(size/2 - 1).doubleValue() + list.get(size/2).doubleValue())/2;
+		else
+			median = list.get(size/2).doubleValue();
+		/*最值*/
+		double min = list.get(0).doubleValue();
+		double max = list.get(size-1).doubleValue();
+		/*总和*/
+		BigDecimal summary = new BigDecimal("0.0");
+		BigDecimal summaryOfSqaureOfEachItem = new BigDecimal("0.0");
+		BigDecimal current = null;
+		/*众数列表*/
+		List<Double> modes = new ArrayList<Double>();
+		Map<Double, Integer> countMap = new HashMap<Double, Integer>();
+		for(int i=0; i<size; i++) {
+			current = new BigDecimal(list.get(i).doubleValue());
+			summary = summary.add(current);
+			summaryOfSqaureOfEachItem = summaryOfSqaureOfEachItem.add(current.multiply(current));
+			countMap.put(list.get(i).doubleValue(), countMap.get(list.get(i).doubleValue())== null ?  1:(countMap.get(list.get(i).doubleValue())+1));
+		}
+		int modeFrequency = Integer.MIN_VALUE;
+		Object[] counts = countMap.values().toArray();
+		boolean haveMode = false;
+		for(int i=0; i<counts.length-1; i++) {
+			if(counts[i] != counts[i+1]) {
+				haveMode = true;
+				break;
+			}
+		}
+		if(haveMode) {
+			for(int i=0; i<counts.length; i++)
+				if((int)counts[i] > modeFrequency)
+					modeFrequency = (int)counts[i];
+			for(Entry<Double, Integer> e: countMap.entrySet()) {
+				if(e.getValue().intValue() == modeFrequency)
+					modes.add(e.getKey());
+			}
+		}
+		/*期望*/
+		BigDecimal expectation = summary.divide(new BigDecimal(size), 6, BigDecimal.ROUND_HALF_UP);
+		BigDecimal theSquareOfTheExpectation = expectation.multiply(expectation);
+		BigDecimal theExpectationOfTheSquare = summaryOfSqaureOfEachItem.divide(new BigDecimal(size), 6, BigDecimal.ROUND_HALF_UP);
+		/*方差*/
+		BigDecimal variance = theExpectationOfTheSquare.subtract(theSquareOfTheExpectation);
+		return new Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>>(max, min, summary, expectation, variance, median, modes);
+	}
+	
+
+	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> simpleStatistics(double... numbers){
+		return statistics(numbers, 0, numbers.length);
+	}
+	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(double[] array){
+		return statistics(array, 0, array.length);
+	}
+	/**
+	 * 统计<code>data</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
+	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>,方差<code>(variance)</code>, 中位数<code>(median)</code>和众数<code>(modes)</code><br>
+	 * 并通过七元组<code>FourTuple&ltA,B,C,D,E,F,G&gt</code>返回
+	 * @param data
 	 * @param left 指定的左端
 	 * @param right 指定的右端
-	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, summary, expectation, variance)</code><br>
+	 * @return <code>Tuple.Seven&lt&gt(max, min, summary, expectation, variance, median, modes)</code><br>
 	 * 当left 或 right 指定端点非法时, 返回null<br>
 	 */
-	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(List<? extends Number> vector, int left, int right){
-		if(left < 0 || right >= vector.size() || left > right)
+	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(double[] data, int left, int right){
+		if(data == null || data.length == 0)
 			return null;
-		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
-		double expectation = 0.0; double variance = 0.0;
-		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
-		double summary = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
-		int length = right - left + 1;
-		for(int i=left; i<=right; i++){
-			current = vector.get(i).doubleValue();
-			if(current > maxValue)
-				maxValue = current;
-			if(current < minValue)
-				minValue = current;
-			summary+=vector.get(i).doubleValue();
-			sumOfSquareOfEachItem+=Math.pow(vector.get(i).doubleValue(), 2.0);
-		}
-		expectation = summary / length;
-		theSquareOfTheExpectation = Math.pow(expectation,2.0);
-		theExpectationOfTheSquare = sumOfSquareOfEachItem/length;
-		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
-		return new Tuple.Five<Double, Double, Double, Double, Double>(maxValue, minValue, summary, expectation, variance);
-	}
-	/**
-	 * 统计<code>numbers</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
-	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
-	 * @param array
-	 * @return
-	 */
-	public static Tuple.Five<Double, Double, Double, Double, Double> simpleStatistics(double... numbers){
-		return statistics(numbers, 0, numbers.length-1);
-	}
-	/**
-	 * 统计<code>array</code>中的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(sumOfEachItem)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
-	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
-	 * @param array
-	 * @return
-	 */
-	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(double[] array){
-		return statistics(array, 0, array.length-1);
-	}
-	/**
-	 * 统计<code>array</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
-	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
-	 * @param array
-	 * @param left 指定的左端
-	 * @param right 指定的右端
-	 * @return <code>FiveTuple&lt&gt(maxValue, minValue, sumOfEachItem, expectation, variance)</code><br>
-	 * 当left 或 right 指定端点非法时, 返回null<br>
-	 */
-	public static Tuple.Five<Double, Double, Double, Double, Double> statistics(double[] array, int left, int right){
-		if(left < 0 || right >= array.length || left > right)
+		if(left > right || left < 0 || left > data.length - 1 || right < 0 || right > data.length - 1)
 			return null;
-		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
-		double expectation = 0.0; double variance = 0.0;
-		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
-		double summary = 0.0; double sumOfSquareOfEachItem = 0.0; double current = 0.0;
-		int length = right - left + 1;
-		for(int i=left; i<=right; i++){
-			current = array[i];
-			if(current > maxValue)
-				maxValue = current;
-			if(current < minValue)
-				minValue = current;
-			summary += array[i];
-			sumOfSquareOfEachItem += Math.pow(array[i], 2.0);
+		int size = right + 1 - left;
+		double[] array = new double[size];
+		System.arraycopy(data, left, array, 0, size);
+		Arrays.sort(array);
+		double median = 0.0;
+		if(size % 2 == 0)
+			median = (array[size/2 - 1] + array[size/2])/2;
+		else
+			median = array[size/2];
+		double min = array[0];
+		double max = array[size - 1];
+		BigDecimal summary = new BigDecimal("0.0");
+		BigDecimal summaryOfSqaureOfEachItem = new BigDecimal("0.0");
+		BigDecimal current = null;
+		List<Double> modes = new ArrayList<Double>();
+		Map<Double, Integer> countMap = new HashMap<Double, Integer>();
+		for(int i=0; i<size; i++) {
+			current = new BigDecimal(array[i]);
+			summary = summary.add(current);
+			summaryOfSqaureOfEachItem = summaryOfSqaureOfEachItem.add(current.multiply(current));
+			countMap.put(array[i], countMap.get(array[i])== null ?  1:(countMap.get(array[i])+1));
 		}
-		expectation = summary / length;
-		theSquareOfTheExpectation = Math.pow(expectation, 2.0);
-		theExpectationOfTheSquare = sumOfSquareOfEachItem / length;
-		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
-		return new Tuple.Five<Double, Double, Double, Double, Double>(maxValue, minValue, summary, expectation, variance);
+		int modeFrequency = Integer.MIN_VALUE;
+		Object[] counts = countMap.values().toArray();
+		boolean haveMode = false;
+		for(int i=0; i<counts.length-1; i++) {
+			if(counts[i] != counts[i+1]) {
+				haveMode = true;
+				break;
+			}
+		}
+		if(haveMode) {
+			for(int i=0; i<counts.length; i++)
+				if((int)counts[i] > modeFrequency)
+					modeFrequency = (int)counts[i];
+			for(Entry<Double, Integer> e: countMap.entrySet()) {
+				if(e.getValue().intValue() == modeFrequency)
+					modes.add(e.getKey());
+			}
+		}
+		BigDecimal expectation = summary.divide(new BigDecimal(size), 6, RoundingMode.HALF_UP);
+		BigDecimal theExpectationOfSquare = summaryOfSqaureOfEachItem.divide(new BigDecimal(size), 6, RoundingMode.HALF_UP);
+		BigDecimal theSquareOfTheExpectation = expectation.multiply(expectation);
+		BigDecimal variance = theExpectationOfSquare.subtract(theSquareOfTheExpectation);
+		return new Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>>(max, min, summary, expectation, variance, median, modes);
 	}
 	
     /**
@@ -114,7 +174,7 @@ public final class MathOperator {
      */
     public static double[] minMaxNormalization(double[] array){
     	double[] result = new double[array.length];
-    	Tuple.Five<Double, Double, Double, Double, Double> statistic = statistics(array);
+    	Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistic = statistics(array);
     	double max = statistic.first.doubleValue();
     	double min = statistic.second.doubleValue();
     	double difference = max - min;

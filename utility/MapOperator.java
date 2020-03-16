@@ -1,5 +1,6 @@
 package utility;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,8 +9,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import utility.Tuple.Seven;
 
 
 public final class MapOperator {
@@ -139,7 +143,7 @@ public final class MapOperator {
 	public static Map<String, LocalDateTime> parseValuesToLocalDateTime(Map<String, String> map, String pattern){
 		Map<String, LocalDateTime> result = new HashMap<String, LocalDateTime>();
 		for(Entry<String, String> e: map.entrySet())
-			result.put(e.getKey(), ChronoOperator.stringToLocalDateTime(e.getValue(), pattern));
+			result.put(e.getKey(), ChronosOperator.stringToLocalDateTime(e.getValue(), pattern));
 		return result;
 	}
 	
@@ -162,39 +166,6 @@ public final class MapOperator {
 		if(!map.containsKey(key))
 			return resultWhenICannotGetValue;
 		return map.get(key);
-	}
-	/**
-	 * 统计<code>Map</code>中的Values的最大值和对应的key<code>(maxValueAndKey)</code>，最小值和对应的key<code>(minValueAndKey)</code>,<br/>
-	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>和方差<code>(variance)</code><br>
-	 * 并通过五元组<code>FourTuple&ltA,B,C,D,E&gt</code>返回
-	 * @param map 
-	 * @return <code>FiveTuple&ltEntry&ltString, T&gt, Entry&ltString, T&gt, Double, Double, Double&gt(maxValueAndKey, minValueAndKey, sumOfEachItem, expectation, variance)</code>
-	 */
-	public static <T extends Number> Tuple.Five<Entry<String, T>, Entry<String, T>,Double,Double,Double> statistics(Map<String, T> map){
-		double maxValue = Double.MIN_VALUE; double minValue = Double.MAX_VALUE;
-		Entry<String, T> maxValueAndKey = null; Entry<String, T> minValueAndKey = null;
-		double expectation = 0.0; double variance = 0.0;
-		double theSquareOfTheExpectation = 0.0; double theExpectationOfTheSquare = 0.0;
-		double summary = 0.0; double sumOfSquareOfEachItem = 0.0; 
-		int size = map.size();
-		for(Entry<String, T> entry : map.entrySet()){
-			if(entry.getValue().doubleValue() > maxValue){
-				maxValue = entry.getValue().doubleValue();
-				maxValueAndKey = entry;
-			}
-			if(entry.getValue().doubleValue() < minValue){
-				minValue = entry.getValue().doubleValue();
-				minValueAndKey = entry;
-			}
-			summary += entry.getValue().doubleValue();
-			sumOfSquareOfEachItem += Math.pow(entry.getValue().doubleValue(), 2.0);
-		}
-		expectation = summary / size;
-		theSquareOfTheExpectation = Math.pow((summary/size),2.0);
-		theExpectationOfTheSquare = sumOfSquareOfEachItem/size;
-		variance = theExpectationOfTheSquare - theSquareOfTheExpectation;
-		return new Tuple.Five<Entry<String, T>, Entry<String, T>, Double, Double, Double>(
-				maxValueAndKey, minValueAndKey, summary, expectation, variance);
 	}
 	/**
 	 * 自定义排序
@@ -228,5 +199,34 @@ public final class MapOperator {
 			result.put(e.getKey(), e.getValue());
 		}
 		return result;
+	}
+	
+	public static <T extends Number> Tuple.Seven<List<Entry<String, Double>>, List<Entry<String, Double>>, BigDecimal, BigDecimal, BigDecimal, Double, List<Entry<String, Double>>> statistic(Map<String, T> map){
+		Map<String, Double> data = new HashMap<String, Double>();
+		List<Double> values = new ArrayList<Double>(data.values().size());
+		for(Entry<String, T> e : map.entrySet()) {
+			data.put(e.getKey(), e.getValue().doubleValue());
+			values.add(e.getValue().doubleValue());
+		}
+		Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> tupleOfValues = MathOperator.statistics(values);
+		double max = tupleOfValues.first; double min = tupleOfValues.second;
+		BigDecimal summary = tupleOfValues.third; BigDecimal expectation = tupleOfValues.fourth; BigDecimal variance = tupleOfValues.fifth;
+		double median = tupleOfValues.sixth;
+		List<Double> modes = tupleOfValues.seventh;
+		List<Entry<String, Double>> maxItems = new ArrayList<Entry<String, Double>>();
+		List<Entry<String, Double>> minItems = new ArrayList<Entry<String, Double>>();
+		List<Entry<String, Double>> modeItems = new ArrayList<Entry<String, Double>>();
+		for(Entry<String, Double> e : data.entrySet()) {
+			if(e.getValue().doubleValue() == max)
+				maxItems.add(e);
+			if(e.getValue().doubleValue() == min)
+				minItems.add(e);
+			for(int i=0, size=modes.size(); i<size; i++) {
+				if(e.getValue().doubleValue() == modes.get(i))
+					modeItems.add(e);
+			}
+		}
+		return new Tuple.Seven<List<Entry<String,Double>>, List<Entry<String,Double>>, BigDecimal, BigDecimal, BigDecimal, Double, List<Entry<String,Double>>>(
+				maxItems, minItems, summary, expectation, variance, median, modeItems);
 	}
 }

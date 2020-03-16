@@ -13,14 +13,15 @@ public class Sort {
 		}
 		System.out.println(sb.toString());
 	}
+	
 	/**
 	 * 3路快速排序
 	 * @param array
 	 * @param left
 	 * @param right
 	 */
-	public static void quickSort(int[] array, int left, int right){
-		if(left > right || left < 0 || right > array.length - 1)
+	public static void threeWayquickSort(int[] array, int left, int right){
+		if(left > right || left < 0 || left > array.length - 1 || right < 0 || right > array.length - 1)
 			return;
 		if(right - left < INSERTION_SORT_THRESHOLD){
 			insertionSort(array, left, right);
@@ -40,7 +41,7 @@ public class Sort {
 				else
 					pointerBetweenLeftAndRight++;
 			}
-			quickSort(array, left, pointerFromLeftToRight - 1);
+			threeWayquickSort(array, left, pointerFromLeftToRight - 1);
 			left = pointerFromRightToLeft + 1;
 		}
 	}
@@ -67,6 +68,8 @@ public class Sort {
 	 * @param right
 	 */
 	public static void insertionSort(int[] array, int left, int right){
+		if(left > right || left < 0 || left > array.length - 1 || right < 0 || right > array.length - 1)
+			return;
 		int i = Integer.MIN_VALUE;
 		int temp = Integer.MIN_VALUE;
 		for(int j=left+1; j<=right; j++){
