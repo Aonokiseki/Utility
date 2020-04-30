@@ -31,6 +31,16 @@ import utility.StringOperator.ILineExecutor;
 
 public final class FileOperator {
 	
+	private final static class Key{
+		private Key(){}
+		private final static String IS_APPEND_CONTENTS = "is.append.contents";
+		private final static String FILE_SEPARATOR = "file.separator";
+		private final static String CUT_PARENT_PATH = "cut.parent.path";
+		private static final String NOT_APPEND_LINESEPARATOR = "not.append.lineserparator";
+		private static final String RW_BUFFER_SIZE = "rw.buffer.size";
+		private static final String EMPTY_STRING = "";
+	}
+	
 	/*默认缓冲区大小被我调整成了 32MB */
 	private static final int DEFAULT_BUFFER_SIZE = 32 /*MiB*/;
 	@SuppressWarnings("unused")
@@ -38,12 +48,8 @@ public final class FileOperator {
 	private static final int ONE_MIB = /* 1024 * 1024 bytes = */ 1048576 /* bytes */;
 	@SuppressWarnings("unused")
 	private static final int ONE_GIB = /* 1024 * 1024 * 1024 bytes = */ 1073741824 /* bytes */;
-	private static final String IS_APPEND_CONTENTS = "is.append.contents";
-	private static final String FILE_SEPARATOR = "file.separator";
-	private static final String CUT_PARENT_PATH = "cut.parent.path";
-	private static final String NOT_APPEND_LINESEPARATOR = "not.append.lineserparator";
-	private static final String RW_BUFFER_SIZE = "rw.buffer.size";
 	private static final String DEFAULT_ENCODING = "UTF-8";
+	private static final String FILE_SEPARATOR = System.getProperty(Key.FILE_SEPARATOR);
 	/*
 	 * 防止实例化
 	 */
@@ -82,15 +88,15 @@ public final class FileOperator {
 	 */
 	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>options) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
-		if(encoding == null || "".equals(encoding.trim()))
+		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, Key.RW_BUFFER_SIZE, "32"));
 		if(bufferSize <= 0 || bufferSize > 1024)
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
 		StringBuilder stringBuilder = new StringBuilder();
-		boolean doNotAppendLineSeparator = Boolean.valueOf(MapOperator.safetyGet(options, NOT_APPEND_LINESEPARATOR, "false"));
+		boolean doNotAppendLineSeparator = Boolean.valueOf(MapOperator.safetyGet(options, Key.NOT_APPEND_LINESEPARATOR, "false"));
 		String currentLineText = null;
 		while((currentLineText = bufferedReader.readLine()) != null){
 			stringBuilder.append(currentLineText);
@@ -113,10 +119,10 @@ public final class FileOperator {
 	 */
 	public static String read(String sourceFileAbsolutePath, String encoding, ILineExecutor iLineExecutor, Map<String,String> options) throws IOException {
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
-		if(encoding == null || "".equals(encoding.trim()))
+		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, Key.RW_BUFFER_SIZE, "32"));
 		if(bufferSize <= 0 || bufferSize > 1024)
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
@@ -168,10 +174,10 @@ public final class FileOperator {
 	 */
 	public static LinkedList<String> readAsList(String sourceFileAbsolutePath, String encoding, ILineExecutor iLineExecutor, Map<String,String> options) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
-		if(encoding == null || "".equals(encoding.trim()))
+		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
-		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, Key.RW_BUFFER_SIZE, "32"));
 		if(bufferSize <= 0 || bufferSize > 1024)
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
@@ -242,12 +248,12 @@ public final class FileOperator {
 	 * 
 	 */
 	public static void write(String targetSavingPath, String text, String encoding, Map<String,String> options) throws IOException{
-		boolean isAppend = Boolean.valueOf(MapOperator.safetyGet(options, IS_APPEND_CONTENTS, "false"));
-		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, RW_BUFFER_SIZE, "32"));
+		boolean isAppend = Boolean.valueOf(MapOperator.safetyGet(options, Key.IS_APPEND_CONTENTS, "false"));
+		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, Key.RW_BUFFER_SIZE, "32"));
 		if(bufferSize <= 0 || bufferSize > 1024)
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		FileOutputStream fileOutputStream = new FileOutputStream(targetSavingPath, isAppend);
-		if(encoding == null || "".equals(encoding.trim()))
+		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, encoding);
 		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter, bufferSize * ONE_MIB);
@@ -267,7 +273,7 @@ public final class FileOperator {
 		Map<String,String> properties = new HashMap<String,String>();
 		Properties property = new Properties();
 		FileInputStream fileInputStream = new FileInputStream(inputFilePath);
-		if(encoding == null || "".equals(encoding.trim()))
+		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
 		property.load(inputStreamReader);
@@ -321,7 +327,7 @@ public final class FileOperator {
 			childsOfFile = currentFile.listFiles(new FilenameFilter(){
 				@Override
 				public boolean accept(File filePointer, String fileName){
-					File current = new File(filePointer.getAbsolutePath()+System.getProperty(FILE_SEPARATOR)+fileName);
+					File current = new File(filePointer.getAbsolutePath()+FILE_SEPARATOR+fileName);
 					if(current.isDirectory())
 						return true;
 					return pattern.matcher(fileName).find();
@@ -373,7 +379,7 @@ public final class FileOperator {
 		while(!fileQueue.isEmpty()){
 			currentFile = fileQueue.remove(0);
 			if(currentFile.isFile()){
-				if(suffix == null || suffix.trim().equals("") || currentFile.getName().endsWith(suffix))
+				if(suffix == null || suffix.trim().equals(Key.EMPTY_STRING) || currentFile.getName().endsWith(suffix))
 					files.add(currentFile);
 				continue;
 			}
@@ -382,9 +388,11 @@ public final class FileOperator {
 			childsOfFile = currentFile.listFiles(new FilenameFilter(){
 				@Override
 				public boolean accept(File filePointer, String fileName){
-					if(suffix == null || suffix.trim().equals(""))
+					if(suffix == null)
 						return true;
-					File current = new File(filePointer.getAbsolutePath()+System.getProperty(FILE_SEPARATOR)+fileName);
+					if(suffix.trim().equals(Key.EMPTY_STRING))
+						return true;
+					File current = new File(filePointer.getAbsolutePath()+FILE_SEPARATOR+fileName);
 					if(current.isDirectory())
 						return true;
 					return (current.isFile() && current.getName().endsWith(suffix.trim()));
@@ -418,7 +426,7 @@ public final class FileOperator {
 			throw new IOException(zipPointer.getAbsolutePath()+" already existed!");
 		}
 		boolean cutParentPath = false;
-		if(option != null && option.get(CUT_PARENT_PATH) != null && "true".equals(option.get(CUT_PARENT_PATH).trim())){
+		if(option != null && option.get(Key.CUT_PARENT_PATH) != null && "true".equals(option.get(Key.CUT_PARENT_PATH).trim())){
 			cutParentPath = true;
 		}
 		//======================================================//
@@ -442,7 +450,7 @@ public final class FileOperator {
 		 * relativePath是裁剪后的根路径, 可真正用于压缩中
 		 */
 		//======================================================//
-		String inputDirectory = "";
+		String inputDirectory = Key.EMPTY_STRING;
 		if(cutParentPath){
 			inputDirectory = filePointer.getAbsolutePath() + fileSeparator;
 		}else{
@@ -473,7 +481,7 @@ public final class FileOperator {
 					fileQueue.add(f);
 				}
 			}else{
-				relativePath = fPointer.getAbsolutePath().replace(inputDirectory, "");
+				relativePath = fPointer.getAbsolutePath().replace(inputDirectory, Key.EMPTY_STRING);
 				zipEntry = new ZipEntry(relativePath);
 				zipOutputStream.putNextEntry(zipEntry);
 				fileInputStream = new FileInputStream(fPointer);
@@ -520,7 +528,7 @@ public final class FileOperator {
 		}
 		//======================================================//
 		ZipEntry zipEntry = null;
-		String entryFilePath = "";
+		String entryFilePath = Key.EMPTY_STRING;
 		File entryFilePointer = null;
 		File entryFileParent = null;
 		BufferedInputStream bufferedInputStream = null;
@@ -617,7 +625,7 @@ public final class FileOperator {
 		while(!files.isEmpty()){
 			current = files.remove(0);
 			/* getParentFile()就是为了保证裁减掉 C:/Game/, 只保留MineCraft目录 */
-			relativePath = current.getAbsolutePath().replace(from.getParentFile().getAbsolutePath(), "");
+			relativePath = current.getAbsolutePath().replace(from.getParentFile().getAbsolutePath(), Key.EMPTY_STRING);
 			newFilePointer = new File(to.getAbsolutePath() + System.getProperty(FILE_SEPARATOR) + relativePath);
 			if(current.isFile()){
 				if(current.equals(newFilePointer))

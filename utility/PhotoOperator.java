@@ -15,7 +15,53 @@ import javax.imageio.ImageIO;
 
 public final class PhotoOperator {
 	private PhotoOperator(){}
-	
+	/**
+	 * 
+	 * Text类，目前用于生成文字图片<br><br>
+	 * 
+	 * 成员变量:<br>
+	 * String text - 文本内容<br>
+	 * Color color - 文本颜色<br>
+	 * Font font   - 文本字体<br>
+	 *
+	 */
+	public static class Text{
+		private String text;
+		private Color color;;
+		private Font font;
+		public Text(String text, Color color, Font font){
+			this.text = text;
+			if(this.text == null){
+				text = "";
+			}
+			this.color = color;
+			if(this.color == null){
+				this.color = Color.WHITE;
+			}
+			this.font = font;
+			if(this.font == null){
+				this.font = new Font("Serief",Font.BOLD,16);
+			}
+		}
+		public void setText(String text){
+			this.text = text;
+		}
+		public String getText(){
+			return this.text;
+		}
+		public void setColor(Color color){
+			this.color = color;
+		}
+		public Color getColor(){
+			return this.color;
+		}
+		public void SetFont(Font font){
+			this.font = font;
+		}
+		public Font getFont(){
+			return this.font;
+		}
+	}
 	/**
 	 * 将文本内容打印到图片中
 	 * 
@@ -80,53 +126,5 @@ public final class PhotoOperator {
         ImageIO.write(image, "jpg", pictureFile);
         image.flush();
         return pictureFile.getAbsolutePath();
-	}
-}
-
-/**
- * 
- * Text类，目前用于生成文字图片<br><br>
- * 
- * 成员变量:<br>
- * String text - 文本内容<br>
- * Color color - 文本颜色<br>
- * Font font   - 文本字体<br>
- *
- */
-class Text{
-	private String text;
-	private Color color;;
-	private Font font;
-	public Text(String text, Color color, Font font){
-		this.text = text;
-		if(this.text == null){
-			text = "";
-		}
-		this.color = color;
-		if(this.color == null){
-			this.color = Color.WHITE;
-		}
-		this.font = font;
-		if(this.font == null){
-			this.font = new Font("Serief",Font.BOLD,16);
-		}
-	}
-	public void setText(String text){
-		this.text = text;
-	}
-	public String getText(){
-		return this.text;
-	}
-	public void setColor(Color color){
-		this.color = color;
-	}
-	public Color getColor(){
-		return this.color;
-	}
-	public void SetFont(Font font){
-		this.font = font;
-	}
-	public Font getFont(){
-		return this.font;
 	}
 }
