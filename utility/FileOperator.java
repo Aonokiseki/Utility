@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -415,13 +414,12 @@ public final class FileOperator {
 	 * @throws IOException 当targetDirectory不存在或outputDirectory下已存在压缩包时
 	 */
 	public static String fileToZip(String targetDirectory, String outputDirectory, Map<String,String>option) throws IOException{
-		String fileSeparator = System.getProperty(FILE_SEPARATOR);
 		//======================================================//
 		File filePointer = new File(targetDirectory);
 		if(!filePointer.exists()){
 			throw new IOException(targetDirectory+" is not exist! please check your path.");
 		}
-		File zipPointer = new File(outputDirectory+fileSeparator+filePointer.getName()+".zip");
+		File zipPointer = new File(outputDirectory+FILE_SEPARATOR+filePointer.getName()+".zip");
 		if(zipPointer.exists()){
 			throw new IOException(zipPointer.getAbsolutePath()+" already existed!");
 		}
@@ -452,9 +450,9 @@ public final class FileOperator {
 		//======================================================//
 		String inputDirectory = Key.EMPTY_STRING;
 		if(cutParentPath){
-			inputDirectory = filePointer.getAbsolutePath() + fileSeparator;
+			inputDirectory = filePointer.getAbsolutePath() + FILE_SEPARATOR;
 		}else{
-			inputDirectory = filePointer.getParent() + fileSeparator;
+			inputDirectory = filePointer.getParent() + FILE_SEPARATOR;
 		}
 		String relativePath = null;
 		//======================================================//
@@ -508,7 +506,6 @@ public final class FileOperator {
 	 * @throws IOException 压缩包的绝对路径不存在或错误，或者目标目录是个已存在的文件时
 	 */
 	public static void zipToFile(String zipAbsolutePath, String targetDirectory, Map<String,String> option) throws IOException{
-		String fileSeparator = System.getProperty(FILE_SEPARATOR);
 		//======================================================//
 		File sourcePointer = new File(zipAbsolutePath);
 		if(!sourcePointer.exists()){
@@ -558,12 +555,13 @@ public final class FileOperator {
 		Enumeration<? extends ZipEntry> entries = zipFile.entries();
 		while(entries.hasMoreElements()){
 			zipEntry = entries.nextElement();
-			entryFilePath = targetDirectory + fileSeparator + zipEntry.getName();
+			entryFilePath = targetDirectory + FILE_SEPARATOR + zipEntry.getName();
 			entryFilePointer = new File(entryFilePath);
 			if(zipEntry.isDirectory()){
 				if(!entryFilePointer.exists()){
 					entryFilePointer.mkdirs();
-				}else{}
+					continue;
+				}
 			}else{
 				entryFileParent = entryFilePointer.getParentFile();
 				if(!entryFileParent.exists()){
@@ -582,12 +580,12 @@ public final class FileOperator {
 		zipFile.close();
 	}
 	/**
-	 * 复制文件
+	 * 复制文件, 需要自行校验from和to是否合法
 	 * @param from
 	 * @param to
 	 * @throws IOException
 	 */
-	private static void fileCopy(File from, File to) throws IOException{
+	public static void fileCopy(File from, File to) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(from);
 		FileOutputStream fileOutputStream = new FileOutputStream(to);
 		FileChannel inputChannel = fileInputStream.getChannel();
@@ -602,58 +600,54 @@ public final class FileOperator {
 	 * 复制文件(夹)
 	 * @param source 源文件(夹), 不存在时抛出异常
 	 * @param destination 目标文件夹,如果是已存在的单个文件则抛出异常
+	 * @param options 可选参数<nr>
+	 * <b>is.delete.from</>
 	 * @throws IOException
 	 */
-	public static void filesCopy(String source, String destination) throws IOException{
+	public static void filesCopy(String source, String destination, Map<String,String> options) throws IOException{
 		File from = new File(source);
 		if(!from.exists())
 			throw new NullPointerException("File ["+source+"] is not exist.");
 		File to = new File(destination);
 		if(to.exists() && to.isFile())
 			throw new IllegalArgumentException("File ["+destination+"] is a file.");
-		String relativePath = null;
+		String name = null;
 		File current = null;
 		File newFilePointer = null;
 		File[] childsOfCurrent = null;
 		List<File> files = new LinkedList<File>();
 		files.add(from);
-		/*
-		 * 注意裁剪相对路径, 如source = C:/Game/MineCraft/, 要注意裁减掉 C:/Game/
-		 * 
-		 * 这样MineCraft目录可以作为相对路径的"根",拼接到destination后边形成新的路径
-		 */
 		while(!files.isEmpty()){
 			current = files.remove(0);
-			/* getParentFile()就是为了保证裁减掉 C:/Game/, 只保留MineCraft目录 */
-			relativePath = current.getAbsolutePath().replace(from.getParentFile().getAbsolutePath(), Key.EMPTY_STRING);
-			newFilePointer = new File(to.getAbsolutePath() + System.getProperty(FILE_SEPARATOR) + relativePath);
+			name = current.getName();
+			newFilePointer = new File(to.getAbsolutePath() + FILE_SEPARATOR + name);
 			if(current.isFile()){
 				if(current.equals(newFilePointer))
-					newFilePointer = new File(newSingleFileNameWhenSourceEqualsDestination(current));
+					newFilePointer = new File(handleDuplicateName(current));
 				fileCopy(current, newFilePointer);
 				continue;
 			}
 			newFilePointer.mkdirs();
 			childsOfCurrent = current.listFiles();
-			Arrays.sort(childsOfCurrent);
 			for(File fPointer : childsOfCurrent)
 				files.add(fPointer);
 		}
 	}
 	/**
-	 * 复制单个文件时，如果该文件所在的父级目录等同于其复制的目的地时, 在其后方添加一个时间戳
+	 * 复制单个文件时，如果该文件所在的父级目录等同于其复制的目的地时, 在其后方添加一个copy字符<br>
+	 * 例:  C:/A.txt  ->  C:/A_copy.txt
 	 * @param current
 	 * @return
 	 */
-	private static String newSingleFileNameWhenSourceEqualsDestination(File current){
+	private static String handleDuplicateName(File current){
 		StringBuilder sb = new StringBuilder();
 		String currentName = current.getName();
 		int lastIndexOfPoint = currentName.lastIndexOf(".");
 		String extension = currentName.substring(lastIndexOfPoint);
 		String firstName = currentName.substring(0, lastIndexOfPoint);
 		sb.append(current.getParent());
-		sb.append(System.getProperty(FILE_SEPARATOR));
-		sb.append(firstName); sb.append("_"); sb.append(System.currentTimeMillis());
+		sb.append(FILE_SEPARATOR);
+		sb.append(firstName); sb.append("_"); sb.append("copy");
 		sb.append(extension);
 		return sb.toString();
 	}
