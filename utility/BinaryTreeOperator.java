@@ -3,9 +3,13 @@ package utility;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Objects;
 
 public class BinaryTreeOperator {
+	
+	public enum Side{
+		LEFT, RIGHT
+	}
 	/**
 	 * 二叉树节点的接口
 	 * @author zhaoyang
@@ -18,7 +22,10 @@ public class BinaryTreeOperator {
 		ITreeNode<T> right();
 		ITreeNode<T> setValue(T value);
 		ITreeNode<T> parent();
+		ITreeNode<T> setParent(ITreeNode<T> parent, Side side);
 		T value();
+		boolean equals(Object o);
+		int hashCode();
 	}
 	/**
 	 * 对<code>ITreeNode&ltT&gt</code>的简单实现
@@ -26,18 +33,26 @@ public class BinaryTreeOperator {
 	 * @param <T>
 	 */
 	public static class BinaryTreeNode<T> implements ITreeNode<T>{
+		private static long count = 0;
+		private final long id = count++;
 		private T value;
 		private BinaryTreeNode<T> leftChild;
 		private BinaryTreeNode<T> rightChild;
 		private BinaryTreeNode<T> parent;
-		
 		public BinaryTreeNode(){}
-
+		
+		public long id() {
+			return this.id;
+		}
+		
 		@Override
 		public BinaryTreeNode<T> setLeft(ITreeNode<T> left) {
+			if(left == null) {
+				this.leftChild = null;
+				return this;
+			}
 			this.leftChild = (BinaryTreeNode<T>) left;
-			if(this.leftChild != null)
-				this.leftChild.parent = this;
+			this.leftChild.parent = this;
 			return this;
 		}
 		@Override
@@ -46,9 +61,12 @@ public class BinaryTreeOperator {
 		}
 		@Override
 		public BinaryTreeNode<T> setRight(ITreeNode<T> right) {
+			if(right == null) {
+				this.rightChild = null;
+				return this;
+			}
 			this.rightChild = (BinaryTreeNode<T>) right;
-			if(this.rightChild != null)
-				this.rightChild.parent = this;
+			this.rightChild.parent = this;
 			return this;
 		}
 		@Override
@@ -64,14 +82,127 @@ public class BinaryTreeOperator {
 		public BinaryTreeNode<T> parent() {
 			return this.parent;
 		}
+		
+		@Override
+		public BinaryTreeNode<T> setParent(ITreeNode<T> parent, Side side){
+			if(parent == null) {
+				this.parent = null;
+				return this;
+			}
+			this.parent = (BinaryTreeNode<T>)parent;
+			switch(side) {
+				case LEFT: this.parent.leftChild = this; break;
+				case RIGHT: this.parent.rightChild = this; break;
+				/* 既不是左边也不是右边, 要断开指向父节点的指针 */
+				default: this.parent = null;
+			}
+			return this;
+		}
+		
 		@Override
 		public T value() {
 			return this.value;
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("[id=%d, value=%s]", id, value);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(this.id);
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if(this == o)
+				return true;
+			if(o instanceof BinaryTreeNode)
+				return false;
+			@SuppressWarnings("rawtypes")
+			BinaryTreeNode btn = (BinaryTreeNode)o;
+			if(btn.id == this.id)
+				return true;
+			return false;
 		}
 	}
 	
 	/*防止实例化*/
 	private BinaryTreeOperator(){}
+	
+	/**
+	 * 交换节点和此节点的孩子节点之间的位置<br/>
+	 * 注: 此方法要求实现 ITreeNode.equals()
+	 * 
+	 * @param <T> 类型参数
+	 * @param current 当前节点
+	 * @param side 当前节点的哪个孩子, 可选值: left(左孩子) | right(右孩子)
+	 * @return 指向孩子节点的指针
+	 */
+	public static <T> ITreeNode<T> swapParentAndChild(ITreeNode<T> current, Side side){
+		if(current == null)
+			return null;
+		switch(side){
+			case LEFT: return swapParentAndLeft(current);
+			case RIGHT: return swapParentAndRight(current);
+			default: return current;
+		}
+	}
+	
+	private static <T> ITreeNode<T> swapParentAndLeft(ITreeNode<T> current){
+		ITreeNode<T> left = current.left();
+		if(left == null)
+			return current;
+		ITreeNode<T> right = current.right();
+		ITreeNode<T> parent = current.parent();
+		boolean parentExist = (parent != null ? true : false);
+		ITreeNode<T> leftLeft = left.left();
+		ITreeNode<T> leftRight = left.right();
+		
+		current.setLeft(leftLeft);
+		current.setRight(leftRight);
+		left.setLeft(current);
+		left.setRight(right);
+		
+		if(parentExist && parent.left().equals(current)) {
+			parent.setLeft(left);
+			return left;
+		}
+		if(parentExist && parent.right().equals(current)) {
+			parent.setRight(left);
+			return left;
+		}
+		left.setParent(null, null);
+		return left;
+	}
+	
+	private static <T> ITreeNode<T> swapParentAndRight(ITreeNode<T> current){
+		ITreeNode<T> right = current.right();
+		if(right == null)
+			return current;
+		ITreeNode<T> left = current.left();
+		ITreeNode<T> parent = current.parent();
+		boolean parentExist = (parent != null ? true : false);
+		ITreeNode<T> rightLeft = right.left();
+		ITreeNode<T> rightRight = right.right();
+		
+		current.setLeft(rightLeft);
+		current.setRight(rightRight);
+		right.setLeft(left);
+		right.setRight(current);
+		
+		if(parentExist && parent.left().equals(current)) {
+			parent.setLeft(right);
+			return right;
+		}
+		if(parentExist && parent.right().equals(current)) {
+			parent.setRight(right);
+			return right;
+		}
+		right.setParent(null, null);
+		return right;
+	}
 	
 	/**
 	 * 将有序队列转换为二叉搜索树<br>
