@@ -85,7 +85,8 @@ public final class FileOperator {
 	 * @return String 文件中的字符串
 	 * @throws IOException 源文件不在指定路径下
 	 */
-	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>options) throws IOException{
+	public static String read(String sourceFileAbsolutePath, String encoding, Map<String,String>options) 
+			throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
@@ -95,7 +96,8 @@ public final class FileOperator {
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
 		StringBuilder stringBuilder = new StringBuilder();
-		boolean doNotAppendLineSeparator = Boolean.valueOf(MapOperator.safetyGet(options, Key.NOT_APPEND_LINESEPARATOR, "false"));
+		boolean doNotAppendLineSeparator = 
+				Boolean.valueOf(MapOperator.safetyGet(options, Key.NOT_APPEND_LINESEPARATOR, "false"));
 		String currentLineText = null;
 		while((currentLineText = bufferedReader.readLine()) != null){
 			stringBuilder.append(currentLineText);
@@ -116,7 +118,8 @@ public final class FileOperator {
 	 * @return String 文件中的字符串
 	 * @throws IOException
 	 */
-	public static String read(String sourceFileAbsolutePath, String encoding, ILineExecutor iLineExecutor, Map<String,String> options) throws IOException {
+	public static String read(String sourceFileAbsolutePath, String encoding, 
+			ILineExecutor iLineExecutor, Map<String,String> options) throws IOException {
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
@@ -171,7 +174,8 @@ public final class FileOperator {
 	 * @return LinkedList 文本列表, 每个元素对应文本的一行
 	 * @throws IOException
 	 */
-	public static LinkedList<String> readAsList(String sourceFileAbsolutePath, String encoding, ILineExecutor iLineExecutor, Map<String,String> options) throws IOException{
+	public static LinkedList<String> readAsList(String sourceFileAbsolutePath, String encoding, 
+			ILineExecutor iLineExecutor, Map<String,String> options) throws IOException{
 		FileInputStream fileInputStream = new FileInputStream(sourceFileAbsolutePath);
 		if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
 			encoding = DEFAULT_ENCODING;
@@ -246,7 +250,8 @@ public final class FileOperator {
 	 * @throws IOException 路径不存在
 	 * 
 	 */
-	public static void write(String targetSavingPath, String text, String encoding, Map<String,String> options) throws IOException{
+	public static void write(String targetSavingPath, String text, String encoding, Map<String,String> options) 
+			throws IOException{
 		boolean isAppend = Boolean.valueOf(MapOperator.safetyGet(options, Key.IS_APPEND_CONTENTS, "false"));
 		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, Key.RW_BUFFER_SIZE, "32"));
 		if(bufferSize <= 0 || bufferSize > 1024)
@@ -305,7 +310,8 @@ public final class FileOperator {
 	 * @return <code>List&ltFile&gt</code>, 每个元素为符合要求的文件(和目录)
 	 * @throws IOException
 	 */
-	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, IExecuter iExecuter, Map<String,String> options) throws IOException{
+	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, 
+			IExecuter iExecuter, Map<String,String> options) throws IOException{
 		File filePointer = new File(inputFilePath);
 		if(!filePointer.exists())
 			throw new IOException(inputFilePath + " is not exist! Please check your path.");
@@ -326,7 +332,7 @@ public final class FileOperator {
 			childsOfFile = currentFile.listFiles(new FilenameFilter(){
 				@Override
 				public boolean accept(File filePointer, String fileName){
-					File current = new File(filePointer.getAbsolutePath()+FILE_SEPARATOR+fileName);
+					File current = new File(filePointer.getAbsolutePath()+ FILE_SEPARATOR + fileName);
 					if(current.isDirectory())
 						return true;
 					return pattern.matcher(fileName).find();
@@ -342,20 +348,15 @@ public final class FileOperator {
 	
 	/**
 	 * 按照指定规则遍历文件
-	 * 
-	 * @param inputFilePath 搜索起点,可以是文件也可以是目录;如果是目录则会遍历该目录下的所有子文件
-	 * @param pattern 正则表达式编译后的模式, 此参数禁止为空
-	 * @param isContainsDirectory 是否包含目录,false-不保存|true-保存, 默认false,即不保存
-	 * @param options 保留参数, 目前没有使用
-	 * @return <code>List&ltFile&gt</code>, 每个元素为符合要求的文件(和目录)
+	 * @param inputFilePath
+	 * @param pattern
+	 * @param isContainsDirectory
+	 * @return
 	 * @throws IOException
 	 */
-	public static List<File> traversal(String inputFilePath, final Pattern pattern, boolean isContainsDirectory, Map<String,String> options) throws IOException{
-		return traversal(inputFilePath, pattern, isContainsDirectory, new IExecuter(){
-			@Override
-			public boolean execute(File file) {
-				return true;
-			}}, options);
+	public static List<File> traversal2(String inputFilePath, final Pattern pattern, boolean isContainsDirectory) 
+			throws IOException{
+		return traversal(inputFilePath, pattern, isContainsDirectory, ((File file) -> {return true;}), null);
 	}
 	/**
 	 * 遍历指定拓展名的文件
@@ -366,7 +367,8 @@ public final class FileOperator {
 	 * @return <code>List&ltFile&gt</code> 每个目标文件指针组成的表
 	 * @throws IOException 当搜索起点不存在时
 	 */
-	public static List<File> traversal(String inputFilePath, final String suffix, boolean isContainsDirectory) throws IOException{
+	public static List<File> traversal(String inputFilePath, final String suffix, boolean isContainsDirectory) 
+			throws IOException{
 		File filePointer = new File(inputFilePath);
 		if(!filePointer.exists())
 			throw new IOException(inputFilePath + " is not exist! Please check your path.");
@@ -413,7 +415,8 @@ public final class FileOperator {
 	 * @return String 压缩包的绝对路径
 	 * @throws IOException 当targetDirectory不存在或outputDirectory下已存在压缩包时
 	 */
-	public static String fileToZip(String targetDirectory, String outputDirectory, Map<String,String>option) throws IOException{
+	public static String fileToZip(String targetDirectory, String outputDirectory, Map<String,String>option) 
+			throws IOException{
 		//======================================================//
 		File filePointer = new File(targetDirectory);
 		if(!filePointer.exists()){
@@ -424,7 +427,8 @@ public final class FileOperator {
 			throw new IOException(zipPointer.getAbsolutePath()+" already existed!");
 		}
 		boolean cutParentPath = false;
-		if(option != null && option.get(Key.CUT_PARENT_PATH) != null && "true".equals(option.get(Key.CUT_PARENT_PATH).trim())){
+		if(option != null && option.get(Key.CUT_PARENT_PATH) != null && 
+				"true".equals(option.get(Key.CUT_PARENT_PATH).trim())){
 			cutParentPath = true;
 		}
 		//======================================================//
@@ -505,7 +509,8 @@ public final class FileOperator {
 	 * @param option 其它参数，目前没有使用
 	 * @throws IOException 压缩包的绝对路径不存在或错误，或者目标目录是个已存在的文件时
 	 */
-	public static void zipToFile(String zipAbsolutePath, String targetDirectory, Map<String,String> option) throws IOException{
+	public static void zipToFile(String zipAbsolutePath, String targetDirectory, Map<String,String> option) 
+			throws IOException{
 		//======================================================//
 		File sourcePointer = new File(zipAbsolutePath);
 		if(!sourcePointer.exists()){

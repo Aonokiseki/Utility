@@ -19,7 +19,6 @@ import utility.Tuple.Seven;
 public final class MapOperator {
 	
 	private MapOperator(){}
-
 	/**
 	 * 对<code>Map&ltString, ?&gt</code>的values按自然排序放入<code>LinkedHashMap&ltString, Object&gt</code>对象中
 	 * @param map 待处理的<code>Map&ltString, ?&gt</code>
@@ -27,12 +26,8 @@ public final class MapOperator {
 	 */
 	public static LinkedHashMap<String, Object> sortKeyOrderByNatural(Map<String, ?> map){
 		ArrayList<Map.Entry<String, ?>> list = new ArrayList<Map.Entry<String, ?>>(map.entrySet());
-		Collections.sort(list, new Comparator<Entry<String, ?>>(){
-			@Override
-			public int compare(Entry<String, ?> entry1, Entry<String, ?> entry2){
-				return entry1.getKey().compareTo(entry2.getKey());
-			}
-		});
+		Collections.sort(list, 
+				(Entry<String, ?> e1, Entry<String, ?> e2) -> e1.getKey().compareTo(e2.getKey()));
 		LinkedHashMap<String, Object> newMap = new LinkedHashMap<String, Object>();
 		for(int i=0; i<list.size(); i++)
             newMap.put(list.get(i).getKey(), list.get(i).getValue());   
@@ -41,73 +36,49 @@ public final class MapOperator {
 	/**
 	 * 对<code>Map&ltString, Calendar&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, Calendar&gt</code>对象中
 	 * @param map  待处理的<code>Map&ltString, Calendar&gt</code>
-	 * @param desc 是否降序
 	 * @return LinkedHashMap&ltString, Calendar&gt
 	 */
-	public static LinkedHashMap<String, Calendar> sortValueOrderByCalendar(Map<String, Calendar> map, boolean desc){
+	public static LinkedHashMap<String, Calendar> sortValueOrderByCalendar(Map<String, Calendar> map){
 		ArrayList<Map.Entry<String, Calendar>> list = new ArrayList<Map.Entry<String, Calendar>>(map.entrySet());
-		Collections.sort(list, new Comparator<Entry<String, Calendar>>(){
-			@Override
-			public int compare(Entry<String, Calendar> e1, Entry<String, Calendar> e2){
-				return e1.getValue().compareTo(e2.getValue());
-			}
-		});
+		Collections.sort(list, 
+				(Entry<String, Calendar> e1, Entry<String, Calendar> e2) -> e1.getValue().compareTo(e2.getValue()));
 		LinkedHashMap<String, Calendar> newMap = new LinkedHashMap<String, Calendar>();
-		if(desc){
-			for(int i=0; i<list.size(); i++)
-	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
-		}else{
-			for(int i=list.size()-1; i>=0; i--)
-	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
-		}
+		for(int i=list.size()-1; i>=0; i--)
+			newMap.put(list.get(i).getKey(), list.get(i).getValue());   
         return newMap;  
 	}
 	/**
-	 * 对<code>Map&ltString, LocalDateTime&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, LocalDateTime&gt</code>对象中
+	 * 对<code>Map&ltString, LocalDateTime&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, <br>
+	 * LocalDateTime&gt</code>对象中
 	 * @param map 待处理的<code>Map&ltString, LocalDateTime&gt</code>
-	 * @param desc 是否降序
 	 * @return LinkedHashMap&ltString, LocalDateTime&gt
 	 */
-	public static LinkedHashMap<String, LocalDateTime> sortValueOrderByLocalDateTime(Map<String, LocalDateTime>map, boolean desc){
-		ArrayList<Map.Entry<String, LocalDateTime>> list = new ArrayList<Map.Entry<String, LocalDateTime>>(map.entrySet());
-		Collections.sort(list, new Comparator<Entry<String, LocalDateTime>>(){
-			@Override
-			public int compare(Entry<String, LocalDateTime> e1, Entry<String, LocalDateTime> e2){
-				return e1.getValue().compareTo(e2.getValue());
-			}
-		});
+	public static LinkedHashMap<String, LocalDateTime> sortValueOrderByLocalDateTime(Map<String, LocalDateTime>map, 
+			boolean desc){
+		ArrayList<Map.Entry<String, LocalDateTime>> list = 
+				new ArrayList<Map.Entry<String, LocalDateTime>>(map.entrySet());
+		Collections.sort(list, 
+				(Entry<String, LocalDateTime> e1, Entry<String, LocalDateTime> e2) -> 
+						e1.getValue().compareTo(e2.getValue()));
 		LinkedHashMap<String, LocalDateTime> newMap = new LinkedHashMap<String, LocalDateTime>();
-		if(desc){
-			for(int i=0; i<list.size(); i++)
-	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
-		}else{
-			for(int i=list.size()-1; i>=0; i--)
-	            newMap.put(list.get(i).getKey(), list.get(i).getValue());   
-		}
+		for(int i=list.size()-1; i>=0; i--)
+			newMap.put(list.get(i).getKey(), list.get(i).getValue());   
         return newMap;
 	}
 	/**
-	 * 对<code>Map&ltString, T&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, Double&gt</code>对象中
+	 *    对<code>Map&ltString, T extends Number&gt</code>的values按大小排序放入<code>LinkedHashMap&ltString, Double&gt</code>
+	 * <br/>对象中
 	 * @param map  待处理的<code>Map&ltString, T&gt</code>, value的类型必须为Number或其子类
-	 * @param desc 是否降序
 	 * @return LinkedHashMap&ltString, Double&gt
 	 */
-	public static <T extends Number> LinkedHashMap<String, Double> sortValueOrderByNumber(Map<String, T> map, boolean desc){
+	public static <T extends Number> LinkedHashMap<String, Double> sortValueOrderByNumber(Map<String, T> map){
 		ArrayList<Map.Entry<String, T>> list = new ArrayList<Map.Entry<String, T>>(map.entrySet());
-		Collections.sort(list, new Comparator<Entry<String, T>>(){
-			@Override
-			public int compare(Entry<String, T> e1, Entry<String, T> e2){
-				return compareResult(e1.getValue().doubleValue(), e2.getValue().doubleValue());
-			}
-		});
+		Collections.sort(list, 
+				(Entry<String, T> e1, Entry<String, T> e2) -> 
+						compareResult(e1.getValue().doubleValue(), e2.getValue().doubleValue()));
 		LinkedHashMap<String, Double> newMap = new LinkedHashMap<String, Double>();
-		if(desc){
-			for(int i=list.size()-1; i>=0; i--)
-				newMap.put(list.get(i).getKey(), list.get(i).getValue().doubleValue());
-		}else{
-			for(int i=0; i<list.size(); i++)
-	            newMap.put(list.get(i).getKey(), list.get(i).getValue().doubleValue());
-		}
+		for(int i=0; i<list.size(); i++)
+			newMap.put(list.get(i).getKey(), list.get(i).getValue().doubleValue());
         return newMap;  
 	}
 	/**
@@ -128,7 +99,8 @@ public final class MapOperator {
 	 * @return
 	 * @throws ParseException - 日期格式解析错误时
 	 */
-	public static Map<String, Calendar> parseValuesToCalendar(Map<String, String> map, TimeFormat timeFormat) throws ParseException{
+	public static Map<String, Calendar> parseValuesToCalendar(Map<String, String> map, TimeFormat timeFormat) 
+			throws ParseException{
 		Map<String, Calendar> result = new HashMap<String, Calendar>();
 		for(Entry<String,String> e: map.entrySet())
 			result.put(e.getKey(), DateOperator.stringToCalendar(e.getValue(), timeFormat));
@@ -173,7 +145,8 @@ public final class MapOperator {
 	 * @param comparator 比较器
 	 * @return LinkedHashMap&ltString, Double&gt
 	 */
-	public static <T> LinkedHashMap<String, Object> customSort(Map<String, T> map, Comparator<Entry<String, T>> comparator){
+	public static <T> LinkedHashMap<String, Object> customSort(Map<String, T> map, 
+			Comparator<Entry<String, T>> comparator){
 		ArrayList<Map.Entry<String, T>> list = new ArrayList<Map.Entry<String, T>>(map.entrySet());
 		Collections.sort(list, comparator);
 		LinkedHashMap<String, Object> newMap = new LinkedHashMap<String, Object>();
@@ -200,17 +173,28 @@ public final class MapOperator {
 		}
 		return result;
 	}
-	
-	public static <T extends Number> Tuple.Seven<List<Entry<String, Double>>, List<Entry<String, Double>>, BigDecimal, BigDecimal, BigDecimal, Double, List<Entry<String, Double>>> statistic(Map<String, T> map){
+	/**
+	 * 统计<code>Map</code>中的最大值<code>(max)</code>的所有项，最小值<code>(min)</code>的所有项,<br/>
+	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>, 方差<code>(variance)</code>, 中位数<code>(median)</code>
+	 * <br/>和众数<code>(modes)</code>的所有项并通过七元组<code>FourTuple&ltA,B,C,D,E,F,G&gt</code>返回
+	 * @param <T> 类型参数, 必须是Number的子类
+	 * @param map 待处理map
+	 * @return <code>Tuple.Seventh&lt&gt(max, min, summary, expectation, variance, median, modes)</code><br>
+	 */
+	public static <T extends Number> Tuple.Seven<List<Entry<String, Double>>, List<Entry<String, Double>>, 
+	BigDecimal, BigDecimal, BigDecimal, Double, List<Entry<String, Double>>> statistic(Map<String, T> map){
 		Map<String, Double> data = new HashMap<String, Double>();
 		List<Double> values = new ArrayList<Double>(data.values().size());
 		for(Entry<String, T> e : map.entrySet()) {
 			data.put(e.getKey(), e.getValue().doubleValue());
 			values.add(e.getValue().doubleValue());
 		}
-		Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> tupleOfValues = MathOperator.statistics(values);
+		Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> tupleOfValues = 
+				MathOperator.statistics(values);
 		double max = tupleOfValues.first; double min = tupleOfValues.second;
-		BigDecimal summary = tupleOfValues.third; BigDecimal expectation = tupleOfValues.fourth; BigDecimal variance = tupleOfValues.fifth;
+		BigDecimal summary = tupleOfValues.third; 
+		BigDecimal expectation = tupleOfValues.fourth; 
+		BigDecimal variance = tupleOfValues.fifth;
 		double median = tupleOfValues.sixth;
 		List<Double> modes = tupleOfValues.seventh;
 		List<Entry<String, Double>> maxItems = new ArrayList<Entry<String, Double>>();
@@ -226,7 +210,8 @@ public final class MapOperator {
 					modeItems.add(e);
 			}
 		}
-		return new Tuple.Seven<List<Entry<String,Double>>, List<Entry<String,Double>>, BigDecimal, BigDecimal, BigDecimal, Double, List<Entry<String,Double>>>(
+		return new Tuple.Seven<List<Entry<String,Double>>, List<Entry<String,Double>>, 
+				BigDecimal, BigDecimal, BigDecimal, Double, List<Entry<String,Double>>>(
 				maxItems, minItems, summary, expectation, variance, median, modeItems);
 	}
 }

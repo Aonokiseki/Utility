@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,9 +17,10 @@ public final class MathOperator {
 		return statistics(vector, 0, vector.size());
 	}
 	/**
-	 * 统计<code>List</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(max)</code>，最小值<code>(min)</code>,<br/>
-	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>, 方差<code>(variance)</code>, 中位数<code>(median)</code>和众数<code>(modes)</code><br>
-	 * 并听过七元组<code>FourTuple&ltA,B,C,D,E,F,G&gt</code>返回
+	 * 统计<code>List</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(max)</code>，<br>
+	 * 最小值<code>(min)</code>,总和<code>(summary)</code>, 期望<code>(expectation)</code>, <br/>
+	 * 方差<code>(variance)</code>, 中位数<code>(median)</code>和众数<code>(modes)</code><br>
+	 * 并听过七元组<code>Tuple.Seven&ltA,B,C,D,E,F,G&gt</code>返回
 	 * @param <T> 类型参数, 必须是Number的子类
 	 * @param data 待处理列表
 	 * @param left 左端
@@ -28,22 +28,19 @@ public final class MathOperator {
 	 * @return <code>Tuple.Seventh&lt&gt(max, min, summary, expectation, variance, median, modes)</code><br>
 	 * 当 left 或 right 指定端点非法时, 返回null<br>
 	 */
-	public static <T extends Number> Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(
-			List<T> data, int left, int right){
+	public static <T extends Number> Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> 
+		statistics(List<T> data, int left, int right){
 		if(data == null || data.isEmpty())
 			return null;
 		if(left > right || left < 0 || left > data.size() || right < 0 || right > data.size())
 			return null;
 		List<T> list = data.subList(left, right);
-		Collections.sort(list, new Comparator<T>(){
-			@Override
-			public int compare(T value1, T value2) {
+		Collections.sort(list, (T value1, T value2) -> {
 				if(value1.doubleValue() - value2.doubleValue() > 0)
 					return 1;
 				if(value1.doubleValue() - value2.doubleValue() < 0)
 					return -1;
 				return 0;
-			}
 		});
 		int size = list.size();
 		/*中位数*/
@@ -68,7 +65,8 @@ public final class MathOperator {
 			current = new BigDecimal(list.get(i).doubleValue());
 			summary = summary.add(current);
 			summaryOfSqaureOfEachItem = summaryOfSqaureOfEachItem.add(current.multiply(current));
-			countMap.put(list.get(i).doubleValue(), countMap.get(list.get(i).doubleValue())== null ?  1:(countMap.get(list.get(i).doubleValue())+1));
+			countMap.put(list.get(i).doubleValue(), countMap.get(list.get(i).doubleValue())== null ?  
+					1:(countMap.get(list.get(i).doubleValue())+1));
 		}
 		int modeFrequency = Integer.MIN_VALUE;
 		Object[] counts = countMap.values().toArray();
@@ -91,22 +89,27 @@ public final class MathOperator {
 		/*期望*/
 		BigDecimal expectation = summary.divide(new BigDecimal(size), 6, BigDecimal.ROUND_HALF_UP);
 		BigDecimal theSquareOfTheExpectation = expectation.multiply(expectation);
-		BigDecimal theExpectationOfTheSquare = summaryOfSqaureOfEachItem.divide(new BigDecimal(size), 6, BigDecimal.ROUND_HALF_UP);
+		BigDecimal theExpectationOfTheSquare = summaryOfSqaureOfEachItem.divide(new BigDecimal(size), 
+				6, BigDecimal.ROUND_HALF_UP);
 		/*方差*/
 		BigDecimal variance = theExpectationOfTheSquare.subtract(theSquareOfTheExpectation);
-		return new Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>>(max, min, summary, expectation, variance, median, modes);
+		return new Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>>
+		(max, min, summary, expectation, variance, median, modes);
 	}
 	
 
-	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> simpleStatistics(double... numbers){
+	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> 
+		simpleStatistics(double... numbers){
 		return statistics(numbers, 0, numbers.length);
 	}
-	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(double[] array){
+	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> 
+		statistics(double[] array){
 		return statistics(array, 0, array.length);
 	}
 	/**
-	 * 统计<code>data</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，最小值<code>(minValue)</code>,<br/>
-	 * 总和<code>(summary)</code>, 期望<code>(expectation)</code>,方差<code>(variance)</code>, 中位数<code>(median)</code>和众数<code>(modes)</code><br>
+	 * 统计<code>data</code>中从下标<code>left</code>到下标<code>right</code>范围内的最大值<code>(maxValue)</code>，<br/>
+	 * 最小值<code>(minValue)</code>,总和<code>(summary)</code>, 期望<code>(expectation)</code>,<br/>
+	 * 方差<code>(variance)</code>, 中位数<code>(median)</code>和众数<code>(modes)</code><br>
 	 * 并通过七元组<code>FourTuple&ltA,B,C,D,E,F,G&gt</code>返回
 	 * @param data
 	 * @param left 指定的左端
@@ -114,7 +117,8 @@ public final class MathOperator {
 	 * @return <code>Tuple.Seven&lt&gt(max, min, summary, expectation, variance, median, modes)</code><br>
 	 * 当left 或 right 指定端点非法时, 返回null<br>
 	 */
-	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistics(double[] data, int left, int right){
+	public static Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> 
+		statistics(double[] data, int left, int right){
 		if(data == null || data.length == 0)
 			return null;
 		if(left > right || left < 0 || left > data.length - 1 || right < 0 || right > data.length - 1)
@@ -160,10 +164,12 @@ public final class MathOperator {
 			}
 		}
 		BigDecimal expectation = summary.divide(new BigDecimal(size), 6, RoundingMode.HALF_UP);
-		BigDecimal theExpectationOfSquare = summaryOfSqaureOfEachItem.divide(new BigDecimal(size), 6, RoundingMode.HALF_UP);
+		BigDecimal theExpectationOfSquare = summaryOfSqaureOfEachItem.divide(new BigDecimal(size), 
+				6, RoundingMode.HALF_UP);
 		BigDecimal theSquareOfTheExpectation = expectation.multiply(expectation);
 		BigDecimal variance = theExpectationOfSquare.subtract(theSquareOfTheExpectation);
-		return new Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>>(max, min, summary, expectation, variance, median, modes);
+		return new Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>>
+		(max, min, summary, expectation, variance, median, modes);
 	}
 	
     /**
@@ -174,7 +180,8 @@ public final class MathOperator {
      */
     public static double[] minMaxNormalization(double[] array){
     	double[] result = new double[array.length];
-    	Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> statistic = statistics(array);
+    	Tuple.Seven<Double, Double, BigDecimal, BigDecimal, BigDecimal, Double, List<Double>> 
+    		statistic = statistics(array);
     	double max = statistic.first.doubleValue();
     	double min = statistic.second.doubleValue();
     	double difference = max - min;
@@ -574,9 +581,12 @@ public final class MathOperator {
 	   if(former.size() != 3 || latter.size() != 3)
 		   throw new IllegalArgumentException("please check your vectors length!");
 	   List<Double> result = new ArrayList<Double>(3);
-	   result.add(0, former.get(1).doubleValue() * latter.get(2).doubleValue() - former.get(2).doubleValue() * latter.get(1).doubleValue());
-	   result.add(1, former.get(2).doubleValue() * latter.get(0).doubleValue() - former.get(0).doubleValue() * latter.get(2).doubleValue());
-	   result.add(2, former.get(0).doubleValue() * latter.get(1).doubleValue() - former.get(1).doubleValue() * latter.get(0).doubleValue());
+	   result.add(0, former.get(1).doubleValue() * latter.get(2).doubleValue() - 
+			   former.get(2).doubleValue() * latter.get(1).doubleValue());
+	   result.add(1, former.get(2).doubleValue() * latter.get(0).doubleValue() - 
+			   former.get(0).doubleValue() * latter.get(2).doubleValue());
+	   result.add(2, former.get(0).doubleValue() * latter.get(1).doubleValue() - 
+			   former.get(1).doubleValue() * latter.get(0).doubleValue());
 	   return result;
    }
    /**

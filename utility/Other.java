@@ -27,10 +27,10 @@ public final class Other {
 		}
 	}
 	    
-	private final static double ONE_KB = 1024.0;
-	private final static double ONE_MB = 1048576.0;
-	private final static double ONE_GB = 1073741824.0;
-	private final static double ONE_TB = 1099511627776.0;
+	public final static double ONE_KB = 1024.0;
+	public final static double ONE_MB = 1048576.0;
+	public final static double ONE_GB = 1073741824.0;
+	public final static double ONE_TB = 1099511627776.0;
 	 /**
      * 获得当前正在执行的方法名称
      */

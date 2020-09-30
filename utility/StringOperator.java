@@ -13,6 +13,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class StringOperator {
+	private final static class Key{
+		private Key() {}
+		@SuppressWarnings("unused")
+		private final static String UNICODE_BIG_UNMARKED = "UnicodeBigUnmarked";
+	    @SuppressWarnings("unused")
+		private final static String UTF8 = "UTF-8";
+	    @SuppressWarnings("unused")
+		private final static String GBK = "GBK";
+	    private final static String CONTAINS_SPACE_LINE = "contains.space.line";
+	    private final static String UP_LEFT = "UP_LEFT";
+	    private final static String UP = "UP";
+	    private final static String LEFT = "LEFT";
+	    private final static String FALSE = "false";
+	    private final static String EMPTY_STRING = "";
+	}
 	/*
 	 * 防止类被实例化
 	 */
@@ -137,7 +152,7 @@ public final class StringOperator {
 	 */
 	public static boolean isNotEmpty(String text){  
         boolean result = false;
-        if((text != null) && (!"".equals(text)))
+        if((text != null) && (!Key.EMPTY_STRING.equals(text)))
         	result = true;
         return result;
     }
@@ -206,7 +221,7 @@ public final class StringOperator {
      */  
     public static String upperCase(String str){  
         if (!isNotEmpty(str)){  
-            return "";
+            return Key.EMPTY_STRING;
         }
         char c;
         StringBuilder sb = new StringBuilder();
@@ -229,7 +244,7 @@ public final class StringOperator {
      */  
     public static String lowerCase(String str){  
     	if (!isNotEmpty(str)){  
-            return "";
+            return Key.EMPTY_STRING;
         }
     	char c;
         StringBuilder sb = new StringBuilder();
@@ -251,7 +266,7 @@ public final class StringOperator {
      */
     public static String toHalfAngle(String str){
     	if (!isNotEmpty(str))
-            return "";
+            return Key.EMPTY_STRING;
     	StringBuilder sb = new StringBuilder();
     	char c;int v;
     	for(int i=0; i<str.length(); i++){
@@ -275,7 +290,7 @@ public final class StringOperator {
      */
     public static String toFullAngle(String str){
     	if (!isNotEmpty(str))
-            return "";
+            return Key.EMPTY_STRING;
     	StringBuilder sb = new StringBuilder();
     	char c;int v;
     	for(int i=0; i<str.length(); i++){
@@ -291,12 +306,7 @@ public final class StringOperator {
     	}
     	return sb.toString();
     }
-    /**
-     * 常用编码名
-     */
-    public final static String UNICODE_BIG_UNMARKED = "UnicodeBigUnmarked";
-    public final static String UTF_8 = "UTF-8";
-    public final static String GBK = "GBK";
+
     /** 
      * 把字符串由一种编码转换为另一种编码
      *  
@@ -408,7 +418,7 @@ public final class StringOperator {
     	return sb.toString();
     }
     
-    private final static String CONTAINS_SPACE_LINE = "contains.space.line";
+    
     private final static String DEFAULT_ENCODING = "UTF-8";
     /**
      * 将一串文本按行读取, 然后将每一行文本当做列表的每一行, 最后返回列表
@@ -423,11 +433,11 @@ public final class StringOperator {
     	LinkedList<String> result = new LinkedList<String>();
     	if(str == null || str.isEmpty())
     		return result;
-    	if(encoding == null || "".equals(encoding))
+    	if(encoding == null || Key.EMPTY_STRING.equals(encoding))
     		encoding = DEFAULT_ENCODING;
     	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName(encoding))), Charset.forName(encoding)));
     	String current;
-    	boolean containsSpaceLine = Boolean.valueOf(MapOperator.safetyGet(param, CONTAINS_SPACE_LINE, "false"));
+    	boolean containsSpaceLine = Boolean.valueOf(MapOperator.safetyGet(param, Key.CONTAINS_SPACE_LINE, Key.FALSE));
     	while((current = bufferedReader.readLine())!=null){
     		if(current.isEmpty() && containsSpaceLine){
     			result.add(current);
@@ -468,7 +478,7 @@ public final class StringOperator {
     	LinkedList<String> result = new LinkedList<String>();
     	if(str == null || str.isEmpty())
     		return result;
-    	if(encoding == null || "".equals(encoding.trim()))
+    	if(encoding == null || Key.EMPTY_STRING.equals(encoding.trim()))
     		encoding = DEFAULT_ENCODING;
     	BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(str.getBytes(Charset.forName(encoding))), Charset.forName(encoding)));
     	String current;
@@ -484,9 +494,7 @@ public final class StringOperator {
     	return result;
     }
     
-    private final static String UP_LEFT = "UP_LEFT";
-    private final static String UP = "UP";
-    private final static String LEFT = "LEFT";
+
     
     /**
 	 * 最长公共子序 列
@@ -496,14 +504,14 @@ public final class StringOperator {
 	 * @return
 	 */
 	public static String longestCommonSubsequence(String str1, String str2, Map<String,String> options) {
-		String[] temp = str1.split("");
+		String[] temp = str1.split(Key.EMPTY_STRING);
 		String[] str1AsArray = new String[temp.length+1];
-		str1AsArray[0] = "";
+		str1AsArray[0] = Key.EMPTY_STRING;
 		for(int i=0; i<temp.length;i++)
 			 str1AsArray[i+1] = temp[i];
-		temp = str2.split("");
+		temp = str2.split(Key.EMPTY_STRING);
 		String[] str2AsArray = new String[temp.length+1];
-		str2AsArray[0] = "";
+		str2AsArray[0] = Key.EMPTY_STRING;
 		for(int i=0; i<temp.length; i++)
 			str2AsArray[i+1] = temp[i];
 		/*公共子序列的长度矩阵*/
@@ -527,13 +535,13 @@ public final class StringOperator {
 				if(str1AsArray[i].equals(str2AsArray[j])) {
 					lcsValue[i][j] = lcsValue[i-1][j-1] + 1;
 					/*上边三条规则的结果，保存在lcsPath这个矩阵中,根据这个矩阵的值取结果*/
-					lcsPath[i][j] = UP_LEFT;
+					lcsPath[i][j] = Key.UP_LEFT;
 				}else if(lcsValue[i-1][j] >= lcsValue[i][j-1]) {
 					lcsValue[i][j] = lcsValue[i-1][j];
-					lcsPath[i][j] = UP;
+					lcsPath[i][j] = Key.UP;
 				}else {
 					lcsValue[i][j] = lcsValue[i][j-1];
-					lcsPath[i][j] = LEFT;
+					lcsPath[i][j] = Key.LEFT;
 				}
 			}
 		}
@@ -561,10 +569,10 @@ public final class StringOperator {
 			public void output(String[][] lcsPath, String[] str, int i, int j) {
 				if(i == 0 || j == 0)
 					return;
-				if(lcsPath[i][j].equals(UP_LEFT)) {
+				if(lcsPath[i][j].equals(Key.UP_LEFT)) {
 					output(lcsPath, str, i-1, j-1);
 					lcsList.add(str[i]);
-				}else if(lcsPath[i][j].equals(UP))
+				}else if(lcsPath[i][j].equals(Key.UP))
 					output(lcsPath, str, i-1, j);
 				else
 					output(lcsPath, str, i, j-1);
