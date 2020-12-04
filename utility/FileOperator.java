@@ -92,7 +92,7 @@ public final class FileOperator {
 			encoding = DEFAULT_ENCODING;
 		InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, encoding);
 		int bufferSize = Integer.valueOf(MapOperator.safetyGet(options, Key.RW_BUFFER_SIZE, "32"));
-		if(bufferSize <= 0 || bufferSize > 1024)
+		if(bufferSize <= 0 || bufferSize > 1024 /* MB */)
 			bufferSize = DEFAULT_BUFFER_SIZE;
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader, bufferSize * ONE_MIB);
 		StringBuilder stringBuilder = new StringBuilder();
@@ -650,10 +650,12 @@ public final class FileOperator {
 		int lastIndexOfPoint = currentName.lastIndexOf(".");
 		String extension = currentName.substring(lastIndexOfPoint);
 		String firstName = currentName.substring(0, lastIndexOfPoint);
-		sb.append(current.getParent());
-		sb.append(FILE_SEPARATOR);
-		sb.append(firstName); sb.append("_"); sb.append("copy");
-		sb.append(extension);
+		sb.append(current.getParent())
+		  .append(FILE_SEPARATOR)
+		  .append(firstName)
+		  .append("_")
+		  .append("copy")
+		  .append(extension);
 		return sb.toString();
 	}
 }
