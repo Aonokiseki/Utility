@@ -470,7 +470,7 @@ public final class StringOperator {
      * 将一串文本按行读取, 然后将每一行文本当做列表的每一行, 最后返回列表
      * @param str 源文本
      * @param encoding 编码
-     * @param iLineExecuter ILineExecuter接口的实现
+     * @param iLineExecutor ILineExecuter接口的实现
      * @return List&ltString&gt 文本列表 
      * @throws IOException
      */

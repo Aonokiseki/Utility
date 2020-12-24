@@ -20,8 +20,8 @@ public class ChronosOperator {
 	private final static String DEFAULT_LOCALTIME_FORMAT = "HH:mm:ss";
 	/**
 	 * 返回指定范围内一个随机的LocalDateTme对象
-	 * @param time1 LocalDateTime的实例化对象
-	 * @param time2 LocalDateTime的实例化对象
+	 * @param dateTime1 LocalDateTime的实例化对象
+	 * @param dateTime2 LocalDateTime的实例化对象
 	 * @return <code>LocalDateTime<code>的实例化对象,时间在time1和time2之间
 	 */
 	public static LocalDateTime getARandomLocalDateTime(LocalDateTime dateTime1, LocalDateTime dateTime2){
