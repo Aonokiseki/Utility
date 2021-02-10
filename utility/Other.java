@@ -3,7 +3,11 @@ package utility;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.text.DecimalFormat;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +16,7 @@ import javax.swing.filechooser.FileSystemView;
 
 
 public final class Other {
+	/* 构造器私有 */
 	private Other(){}
 	
 	public enum SizeUnit{
@@ -135,7 +140,8 @@ public final class Other {
      * @param maxRadius 
      * @return ThreeTuple
      */
-    public static Tuple.Three<Double,Double,Double> getRandomCoordinateBySphere(double x, double y, double z, double maxRadius){
+    public static Tuple.Three<Double,Double,Double> getRandomCoordinateBySphere(
+    		double x, double y, double z, double maxRadius){
     	double theta = Math.random() * 2 * Math.PI;
     	double phi = Math.random() * Math.PI;
     	x = Math.random() * maxRadius * Math.cos(theta) * Math.sin(phi) + x;
@@ -152,7 +158,8 @@ public final class Other {
      * @param width 
      * @return TwoTuple
      */
-    public static Tuple.Two<Double,Double> getRandomCoordinateBySquare(double x, double y, double length, double width){
+    public static Tuple.Two<Double,Double> getRandomCoordinateBySquare(
+    		double x, double y, double length, double width){
     	double pX = Math.random() * length + x;
     	double pY = Math.random() * width + y;
     	return new Tuple.Two<Double,Double>(pX, pY);
@@ -168,7 +175,8 @@ public final class Other {
      * @param heigh 
      * @return ThreeTuple
      */
-    public static Tuple.Three<Double,Double,Double> getRandomCoordinateByCuboid(double x, double y, double z, double length, double width, double heigh){
+    public static Tuple.Three<Double,Double,Double> getRandomCoordinateByCuboid(
+    		double x, double y, double z, double length, double width, double heigh){
     	double pX = Math.random() * length + x;
     	double pY = Math.random() * width + y;
     	double pZ = Math.random() * heigh + z;
@@ -238,7 +246,8 @@ public final class Other {
     		eachDisk = new HashMap<String,String>();
     		eachDisk.put("TotalSpace", FormatFileSize(files[i].getTotalSpace(), sizeUnit));
     		eachDisk.put("FreeSpace",  FormatFileSize(files[i].getFreeSpace(), sizeUnit));
-    		eachDisk.put("Free/Total", new DecimalFormat("#0.00").format((double)files[i].getFreeSpace()/(double)files[i].getTotalSpace()));
+    		eachDisk.put("Free/Total", new DecimalFormat("#0.00").format((double)files[i].getFreeSpace() /
+    				(double)files[i].getTotalSpace()));
     		result.put(fileSystemView.getSystemDisplayName(files[i]), eachDisk);
     	}
     	return result;
@@ -292,6 +301,31 @@ public final class Other {
     	double[] result = new double[firstLength + secondLength];
     	System.arraycopy(first, firstStart, result, 0, firstLength);
     	System.arraycopy(second, secondStart, result, firstLength, secondLength);
+    	return result;
+    }
+    /**
+     * 获取本机ip地址和网络接口名称
+     * @return
+     * @throws SocketException
+     */
+    public static Map<String,String> localAddressAndNetworkName() throws SocketException{
+    	Map<String,String> result = new HashMap<String,String>();
+    	Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
+    	NetworkInterface networkInterface = null;
+    	Enumeration<InetAddress> inetAddressEnum = null;
+    	InetAddress inetAddress = null;
+    	while(enumeration.hasMoreElements()) {
+    		networkInterface = enumeration.nextElement();
+    		if(networkInterface.isLoopback() || networkInterface.isVirtual())
+    			continue;
+    		inetAddressEnum = networkInterface.getInetAddresses();
+    		while(inetAddressEnum.hasMoreElements()) {
+    			inetAddress = inetAddressEnum.nextElement();
+    			if(inetAddress.isLoopbackAddress() || !inetAddress.isSiteLocalAddress() || inetAddress.isAnyLocalAddress())
+    				continue;
+    			result.put(inetAddress.getHostAddress(), networkInterface.getName()+" | "+networkInterface.getDisplayName());
+    		}
+    	}
     	return result;
     }
 }
